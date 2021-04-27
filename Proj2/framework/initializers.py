@@ -1,47 +1,108 @@
 # -*- coding: utf-8 -*-
 
+import math
 from torch import empty
 
 
 class Initializer(object):
     
     def __init__(self):
-        raise NotImplementedError
-    
-    def generate(self, shape):
-        raise NotImplementedError
+        assert type(self) != Initializer, "Abstract Class Initializer can't be instanciated."
     
     def __call__(self, shape):
-        return self.generate(shape)
+        return self._generate(shape)
+    
+    def _generate(self, shape):
+        return
     
     
-class GlorotUniform(Initializer):
-    pass
+    
+class XavierUniform(Initializer):
+    
+    def _generate(self, shape):
+        assert len(shape) == 2, f"{self.__class__.__name__} expected parameter 'shape' to length of 2. " + \
+                                f"Got shape = {shape} with len(shape) = {len(shape)}."
+        
+        fan_out, fan_in = shape
+        bound = math.sqrt( 6 / fan_out + fan_in )
+        return empty(shape).uniform_(-bound, bound)
+    
+
+class XavierNormal(Initializer):
+    
+    def _generate(self, shape):
+        assert len(shape) == 2, f"{self.__class__.__name__} expected parameter 'shape' to length of 2. " + \
+                                f"Got shape = {shape} with len(shape) = {len(shape)}."
+        
+        fan_out, fan_in = shape
+        std = math.sqrt( 2 / fan_out + fan_in )
+        return torch.empty(shape).normal_(0., std)
 
 
-class GlorotNormal(Initializer):
-    pass
+class HeUniform(Initializer):
+    
+    def _generate(self, shape):
+        assert len(shape) == 2, f"{self.__class__.__name__} expected parameter 'shape' to length of 2. " + \
+                                f"Got shape = {shape} with len(shape) = {len(shape)}."
+        
+        fan_out, fan_in = shape
+        bound = math.sqrt( 6 / fan_in )
+        return empty(shape).uniform_(-bound, bound)    
 
+    
+class HeNormal(Initializer):
+    
+    def _generate(self, shape):
+        assert len(shape) == 2, f"{self.__class__.__name__} expected parameter 'shape' to length of 2. " + \
+                                f"Got shape = {shape} with len(shape) = {len(shape)}."
+        
+        fan_out, fan_in = shape
+        return torch.empty(shape).normal_() * math.sqrt(2 / fan_in)
+    
 
 class RandomUniform(Initializer):
-    pass
-
-
+    
+    def __init__(self, lower = -0.05, upper = +0.05):
+        assert lower <= upper, f"{self.__class__.__name__} expects parameter 'lower' smaller or equal than parameter 'upper'. " + \
+                               f"Got: lower = {lower}, upper = {upper}."
+        self.lower = lower
+        self.upper = upper
+    
+    def _generate(self, shape):
+        return empty(shape).uniform_(self.lower, self.upper)
+    
+    
 class RandomNormal(Initializer):
-    pass
-
-
+    
+    def __init__(self, mean = 0., std = 0.05):
+        assert std > 0., f"{self.__class__.__name__} expects parameter 'std' strictly larger than 0. " + \
+                         f"Got: std = {std}."
+        self.mean = mean
+        self.std  = std
+        
+    def _generate(self, shape):
+        return empty(shape).normal_(self.mean, self.std)
+        
+        
 class Zeros(Initializer):
-    pass
+    
+    def _generate(self, shape):
+        return empty(shape).fill_(0.)
 
-
+    
 class Ones(Initializer):
-    pass
+    
+    def _generate(self, shape):
+        return empty(shape).fill_(1.)
 
-
+    
 class Constant(Initializer):
-    pass
-
+    
+    def __init__(self, value = 0.):
+        self.value = value
+    
+    def _generate(self, shape):
+        return empty(shape).fill_(self.value)
 
 
 def get_initializer_instance(initializer):
@@ -49,20 +110,24 @@ def get_initializer_instance(initializer):
         return initializer
     
     if isinstance(initializer, str):
-        if initializer == "glorot_uniform":
-            pass
-        elif initializer == "glorot_normal":
-            pass
+        if initializer   == "xavier_uniform":
+            return XavierUniform()
+        elif initializer == "xavier_normal":
+            return XavierNormal()
+        elif initializer == "he_uniform":
+            return HeUniform()
+        elif initializer == "he_normal":
+            return HeNormal()
         elif initializer == "random_uniform":
-            pass
+            return RandomUniform()
         elif initializer == "random_normal":
-            pass
+            return RandomNormal()
         elif initializer == "zeros":
-            pass
+            return Zeros()
         elif initializer == "ones":
-            pass
+            return Ones()
         elif initializer == "constant":
-            pass
+            return Constant()
         else:
             raise ValueError("Unknown initializer:", initializer)
     

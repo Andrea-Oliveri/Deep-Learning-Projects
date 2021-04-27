@@ -12,7 +12,7 @@ class Sequential(Module):
     def add(self, module):
         pass
     
-    def forward(self, *input):
+    def forward(self, *inputs):
         raise NotImplementedError
     
     def backward(self, *gradwrtoutput):
