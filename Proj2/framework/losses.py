@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from modules import Module
+from .modules import Module
 
 
 class Loss(object):
@@ -17,7 +17,7 @@ class Loss(object):
         
 class MSE(Loss):
     
-    def compute(self, target, prediction):
+    def compute(self, target, prediction):        
         assert target.shape == prediction.shape, f"MSE requires target and prediction tensors to have same shape. " + \
                                                  f"Got target.shape = {target.shape}, prediction.shape = {prediction.shape}"
 
@@ -25,13 +25,13 @@ class MSE(Loss):
         
         
     def compute_gradient(self, target, prediction):
-    """ Returns only one gradient even though forward takes two: only gradient wrt predictions. SGD!!
+        """ Returns only one gradient even though forward takes two: only gradient wrt predictions. SGD!!
         Args:
             -
             
         Returns:
-            -
-    """
+            - 
+        """
         return (target - prediction).multiply(-2).mean()
 
 #class MSE(Module):

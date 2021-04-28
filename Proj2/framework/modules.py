@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from torch import empty
-from initializers import get_initializer_instance
+from .initializers import get_initializer_instance
 
 
 class Module(object):
@@ -9,8 +9,8 @@ class Module(object):
     def __init__(self):
         assert type(self) != Module, "Abstract Class Module can't be instanciated."
         
-    def __call__(self. *inputs):
-        self.forward(*inputs)
+    def __call__(self, *inputs):
+        return self.forward(*inputs)
     
     def forward(self, *inputs):
         raise NotImplementedError
@@ -27,7 +27,7 @@ class Module(object):
     
 class Linear(Module):
     
-    def __init__(fan_in, fan_out, use_bias = True, 
+    def __init__(self, fan_in, fan_out, use_bias = True, 
                  weight_initializer = "xavier_uniform", bias_initializer = "zeros"):
         
         weight_initializer_instance = get_initializer_instance(weight_initializer)
@@ -58,12 +58,12 @@ class Linear(Module):
     def backward(self, *gradwrtoutput):
         gradwrtinput = []
         for forward_pass_input, grad_output in zip(self.forward_pass_inputs, gradwrtoutput):
-            self.grad_weight += forward_pass_input.T @ grad_output
+            self.grad_weight += grad_output @ forward_pass_input.T    # !!!!!!!!!!!!!! CHECK IF IT SHOULD BE forward_pass_input.T @ grad_output 
             
             if self.use_bias:
                 self.grad_bias += grad_output
 
-            gradwrtinput.append( self.weights.T @ grad_output )
+            gradwrtinput.append( self.weight.T @ grad_output )
                 
         return tuple(gradwrtinput)
     
@@ -82,9 +82,11 @@ class Linear(Module):
             self.bias -= lr * self.grad_bias
 
 
-class ReLU(Module):
+class Relu(Module):
         
     def forward(self, *inputs):
+        self.forward_pass_inputs = inputs
+        
         outputs = []
         for input_tensor in inputs:
             outputs.append( input_tensor.relu() )
@@ -92,12 +94,19 @@ class ReLU(Module):
         return tuple(outputs)
     
     def backward(self, *gradwrtoutput):
-        raise NotImplementedError
+        gradwrtinput = []
+        
+        for forward_pass_input, grad_output in zip(self.forward_pass_inputs, gradwrtoutput):
+            gradwrtinput.append( (forward_pass_input > 0) * grad_output )
+                
+        return tuple(gradwrtinput)
 
 
 class Tanh(Module):
         
     def forward(self, *inputs):
+        self.forward_pass_inputs = inputs
+
         outputs = []
         for input_tensor in inputs:
             outputs.append( input_tensor.tanh() )
@@ -105,4 +114,9 @@ class Tanh(Module):
         return tuple(outputs)
     
     def backward(self, *gradwrtoutput):
-        raise NotImplementedError
+        gradwrtinput = []
+        
+        for forward_pass_input, grad_output in zip(self.forward_pass_inputs, gradwrtoutput):
+            gradwrtinput.append( (1 / forward_pass_input.cosh().pow(2)) * grad_output )
+                
+        return tuple(gradwrtinput)

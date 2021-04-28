@@ -36,7 +36,7 @@ class XavierNormal(Initializer):
         
         fan_out, fan_in = shape
         std = math.sqrt( 2 / fan_out + fan_in )
-        return torch.empty(shape).normal_(0., std)
+        return empty(shape).normal_(0., std)
 
 
 class HeUniform(Initializer):
@@ -57,7 +57,7 @@ class HeNormal(Initializer):
                                 f"Got shape = {shape} with len(shape) = {len(shape)}."
         
         fan_out, fan_in = shape
-        return torch.empty(shape).normal_() * math.sqrt(2 / fan_in)
+        return empty(shape).normal_() * math.sqrt(2 / fan_in)
     
 
 class RandomUniform(Initializer):

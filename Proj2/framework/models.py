@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from torch import empty
-from modules import Module
+from .modules import Module
 
 
 class Sequential(Module):
@@ -10,12 +10,12 @@ class Sequential(Module):
         self.layers = []
         
     def __init__(self, *layers):
-        assert all([issubclass(layer, Module) for layer in layers]), "The layers should be subclass of Module."
+        assert all([isinstance(layer, Module) for layer in layers]), "The layers should be subclass of Module."
         self.layers = list(layers)
     
-    def add(self, module):
-        assert issubclass(module, Module), "The layers should be subclass of Module."
-        self.layers.append(module)
+    def add(self, layer):
+        assert isinstance(layer, Module), "The layers should be subclass of Module."
+        self.layers.append(layer)
     
     def forward(self, *inputs):
         outputs = inputs
@@ -23,7 +23,7 @@ class Sequential(Module):
         for layer in self.layers:
             outputs = layer.forward(*outputs)
             
-        return outputs
+        return tuple(outputs)
     
     def backward(self, *gradwrtoutput):
         gradwrtinput = gradwrtoutput
