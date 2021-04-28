@@ -8,6 +8,9 @@ class Module(object):
     
     def __init__(self):
         assert type(self) != Module, "Abstract Class Module can't be instanciated."
+        
+    def __call__(self. *inputs):
+        self.forward(*inputs)
     
     def forward(self, *inputs):
         raise NotImplementedError
@@ -17,6 +20,9 @@ class Module(object):
     
     def param(self):
         return []
+    
+    def update_params(self, lr):
+        return
     
     
 class Linear(Module):
@@ -35,8 +41,6 @@ class Linear(Module):
             self.bias = bias_initializer_instance((fan_out, 1))
             self.grad_bias = empty(self.bias.shape).zero_()
 
-        
-        
     def forward(self, *inputs):
         self.forward_pass_inputs = inputs
         
@@ -51,7 +55,6 @@ class Linear(Module):
             
         return tuple(outputs)
     
-    
     def backward(self, *gradwrtoutput):
         gradwrtinput = []
         for forward_pass_input, grad_output in zip(self.forward_pass_inputs, gradwrtoutput):
@@ -64,7 +67,6 @@ class Linear(Module):
                 
         return tuple(gradwrtinput)
     
-    
     def param(self):
         parameters = [(self.weight, self.grad_weight)]
         
@@ -73,14 +75,11 @@ class Linear(Module):
             
         return parameters
     
-    
-    def sgd_step(self, lr):
+    def update_params(self, lr):
         self.weight -= lr * self.grad_weight
         
         if self.use_bias:
             self.bias -= lr * self.grad_bias
-        
-    
 
 
 class ReLU(Module):
