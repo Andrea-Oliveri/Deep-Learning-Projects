@@ -32,7 +32,7 @@ class MSE(Loss):
         Returns:
             - 
         """
-        return (target - prediction).multiply(-2).mean()
+        return (target - prediction).multiply(-2/len(target))
 
 #class MSE(Module):
 #    
