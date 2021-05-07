@@ -8,39 +8,97 @@ from framework.models import Sequential
 from framework.modules import Linear, Relu, Tanh
 from framework.losses import MSE
 
-train_input = tensor([0, 1, 2, 3]).float().reshape(-1,1)
-train_input.requires_grad = True
-train_target = tensor([0, 1]).float().reshape(-1,1)
+from framework.initializers import XavierUniform, XavierNormal, HeUniform, HeNormal
 
-test_lin_layer = Linear(4, 2)
-test_lin_layer_torch = nn.Linear(4, 2)
+import matplotlib.pyplot as plt
 
-test_lin_layer.weight = test_lin_layer_torch.weight.clone().detach()
-test_lin_layer.weight.requires_grad = False
 
-test_lin_layer.bias = test_lin_layer_torch.bias.clone().detach().reshape(-1, 1)
-test_lin_layer.bias.requires_grad = False
 
-output, = test_lin_layer(train_input)
-output_torch = test_lin_layer_torch(train_input.T).T
-output_torch.requires_grad = True
+def generate_data(n_training_samples = 10, n_test_samples = 10):
+    all_inputs = empty(n_training_samples + n_test_samples, 2).uniform_()
 
-assert torch.all(output == output_torch)
+    all_classes = ((all_inputs - 0.5).pow(2).sum(axis = 1).sqrt() < 1 / math.sqrt(2*math.pi)).long()
+    all_target  = empty(n_training_samples + n_test_samples, 2).zero_()
+    all_target[all_classes == 0, 0] = 1
+    all_target[all_classes == 1, 1] = 1
+    
+    train_input , test_input  = all_inputs.split([n_training_samples, n_test_samples])
+    train_target, test_target = all_target.split([n_training_samples, n_test_samples])
 
-loss = MSE()
-loss_torch = nn.MSELoss()
+    return train_input, train_target, test_input, test_target
 
-computed_loss = loss.compute(output, train_target)
-computed_loss_torch = loss_torch(output_torch, train_target)
-computed_loss_torch.requires_grad = True
 
-assert computed_loss == computed_loss_torch
+n_tries = 100
+train_input, train_target, _, _ = generate_data(n_tries, n_tries)
 
-grad_loss = loss.compute_gradient(output, train_target)
+for input_, target in zip(train_input, train_target):
 
-computed_loss_torch.backward()
-grad_loss_torch = output_torch.grad
+    input_ = input_.view(-1, 1)
+    target = target.view(-1, 1)
+    input_.requires_grad = True
 
-print(grad_loss, "\n", grad_loss_torch)
+    lin_layer1 = Linear(2, 4)
+    lin_layer_torch1 = nn.Linear(2, 4)
+    
+    lin_layer1.weight = lin_layer_torch1.weight.clone().detach()
+    lin_layer1.bias   = lin_layer_torch1.bias.  clone().detach().reshape(-1, 1)
+    
+    lin_layer2 = Linear(4, 2)
+    lin_layer_torch2 = nn.Linear(4, 2)
+    
+    lin_layer2.weight = lin_layer_torch2.weight.clone().detach()
+    lin_layer2.bias   = lin_layer_torch2.bias.  clone().detach().reshape(-1, 1)
+    
+    seq = Sequential(lin_layer1, Relu(), lin_layer2, Tanh())
+    seq_torch = nn.Sequential(lin_layer_torch1, nn.ReLU(), lin_layer_torch2, nn.Tanh())
 
-test_lin_layer.backward(loss.compute_gradient(output, train_target))
+    output, = seq(input_)
+    output_torch = seq_torch(input_.T).T
+    
+    assert torch.allclose(output, output_torch), "Test Same Output FAILED"
+    
+
+    
+    loss = MSE()
+    loss_torch = nn.MSELoss()
+    
+    computed_loss = loss.compute(target, output)
+    computed_loss_torch = loss_torch(output_torch, target)
+    
+    assert torch.allclose(computed_loss, computed_loss_torch), "Test Same Loss FAILED"
+    
+    
+    
+    grad_loss = loss.compute_gradient(output, target)
+    
+    grad_loss_torch, = torch.autograd.grad(computed_loss_torch, output_torch, retain_graph = True)
+    
+    assert torch.allclose(grad_loss, grad_loss_torch), "Test Same Grad Loss FAILED"
+    
+    
+    
+    grad_all, = seq.backward(grad_loss)
+    
+    grad_all_torch, = torch.autograd.grad(computed_loss_torch, input_, retain_graph = True)
+    
+    assert torch.allclose(grad_all, grad_all_torch), "Test Same Overall Grad FAILED"
+    
+    
+    
+    grad_weight1 = lin_layer1.grad_weight
+    grad_weight2 = lin_layer2.grad_weight
+
+    grad_weight_torch1, = torch.autograd.grad(computed_loss_torch, lin_layer_torch1.weight, retain_graph = True)
+    grad_weight_torch2, = torch.autograd.grad(computed_loss_torch, lin_layer_torch2.weight, retain_graph = True)
+
+    assert torch.allclose(grad_weight1, grad_weight_torch1) and torch.allclose(grad_weight2, grad_weight_torch2), "Test Same Weights Grad Lin FAILED"
+
+
+
+    grad_bias1 = lin_layer1.grad_bias.T
+    grad_bias2 = lin_layer2.grad_bias.T
+
+    grad_bias_torch1, = torch.autograd.grad(computed_loss_torch, lin_layer_torch1.bias, retain_graph = True)
+    grad_bias_torch2, = torch.autograd.grad(computed_loss_torch, lin_layer_torch2.bias, retain_graph = True)
+
+    assert torch.allclose(grad_bias1, grad_bias_torch1) and torch.allclose(grad_bias2, grad_bias_torch2), "Test Same Bias Grad Lin FAILED"

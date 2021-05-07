@@ -58,7 +58,7 @@ class Linear(Module):
     def backward(self, *gradwrtoutput):
         gradwrtinput = []
         for forward_pass_input, grad_output in zip(self.forward_pass_inputs, gradwrtoutput):
-            self.grad_weight += grad_output @ forward_pass_input.T    # !!!!!!!!!!!!!! CHECK IF IT SHOULD BE forward_pass_input.T @ grad_output 
+            self.grad_weight += grad_output @ forward_pass_input.T 
             
             if self.use_bias:
                 self.grad_bias += grad_output
@@ -77,9 +77,12 @@ class Linear(Module):
     
     def update_params(self, lr):
         self.weight -= lr * self.grad_weight
+        self.grad_weight = empty(self.weight.shape).zero_()
         
         if self.use_bias:
             self.bias -= lr * self.grad_bias
+            self.grad_bias = empty(self.bias.shape).zero_()
+                    
 
 
 class Relu(Module):

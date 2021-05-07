@@ -10,11 +10,15 @@ class Sequential(Module):
         self.layers = []
         
     def __init__(self, *layers):
-        assert all([isinstance(layer, Module) for layer in layers]), "The layers should be subclass of Module."
+        # If the layers were given as a single list or tuple rather than as args.
+        if len(layers) == 1 and type(layers[0]) in (tuple, list):
+            layers = layers[0]
+            
+        assert all([isinstance(layer, Module) for layer in layers]), "The layers should be an instance of a subclass of Module."
         self.layers = list(layers)
     
     def add(self, layer):
-        assert isinstance(layer, Module), "The layers should be subclass of Module."
+        assert isinstance(layer, Module), "The layer should be an instance of a subclass of Module."
         self.layers.append(layer)
     
     def forward(self, *inputs):
@@ -31,9 +35,14 @@ class Sequential(Module):
         for layer in self.layers[::-1]:
             gradwrtinput = layer.backward(*gradwrtinput)
             
+            
+        # THIS IS JUST FOR DEBUG. REMOVE AT END
+        return gradwrtinput
+    
+            
     def update_params(self, lr):
         for layer in self.layers:
             layer.update_params(lr)
         
     def param(self):
-        return [layer.params() for layer in self.layers]
+        return [layer.param() for layer in self.layers]

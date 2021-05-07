@@ -24,7 +24,7 @@ class XavierUniform(Initializer):
                                 f"Got shape = {shape} with len(shape) = {len(shape)}."
         
         fan_out, fan_in = shape
-        bound = math.sqrt( 6 / fan_out + fan_in )
+        bound = math.sqrt( 6 / (fan_out + fan_in) )
         return empty(shape).uniform_(-bound, bound)
     
 
@@ -35,7 +35,7 @@ class XavierNormal(Initializer):
                                 f"Got shape = {shape} with len(shape) = {len(shape)}."
         
         fan_out, fan_in = shape
-        std = math.sqrt( 2 / fan_out + fan_in )
+        std = math.sqrt( 2 / (fan_out + fan_in) )
         return empty(shape).normal_(0., std)
 
 
@@ -109,7 +109,7 @@ def get_initializer_instance(initializer):
     if isinstance(initializer, Initializer):
         return initializer
     
-    if isinstance(initializer, str):
+    elif isinstance(initializer, str):
         if initializer   == "xavier_uniform":
             return XavierUniform()
         elif initializer == "xavier_normal":
