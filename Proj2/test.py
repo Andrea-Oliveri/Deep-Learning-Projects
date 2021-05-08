@@ -8,7 +8,15 @@ from framework.models import Sequential
 from framework.modules import Linear, Relu, Tanh
 from framework.losses import MSE
 
-import matplotlib.pyplot as plt
+
+
+# IMPROVEMENTS:
+#    - Optimizer must be SGD, but we can create a lr scheduler which adapts learning
+#      rate based on epoch number.
+#    - Batch inference? May be hard, but ideally if we provide a tensor with a batch size
+#      dimention, make computations for whole batch in one go. Is useful only of validation
+#      set inference (to avoid looping) 
+
 
 
 def generate_data(n_training_samples = 1000, n_test_samples = 1000):
