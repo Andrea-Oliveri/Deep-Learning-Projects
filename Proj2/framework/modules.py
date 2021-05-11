@@ -24,6 +24,9 @@ class Module(object):
     def update_params(self, lr):
         return
     
+    def load_params(self, params):
+        return
+    
     
 class Linear(Module):
     
@@ -84,6 +87,47 @@ class Linear(Module):
         if self.use_bias:
             self.bias -= lr * self.grad_bias
             self.grad_bias = empty(self.bias.shape).zero_()
+            
+    def load_params(self, params):
+        if self.use_bias:
+            assert len(params) == 2, "Linear layer using bias expects params to be loaded to be " + \
+                                     "a list containing two elements: [weight, bias]. " + \
+                                     "Got len(params) = {}".format(len(params))
+                                     
+            (new_weight, new_grad_weight), (new_bias, new_grad_bias) = params
+                                      
+            assert new_bias.shape == self.bias.shape,  "Shape mismatch between size of bias to be " + \
+                                                       "loaded by Linear layer and expected size. " + \
+                                                      f"Got new_bias.shape = {new_bias.shape} " + \
+                                                      f"and expected_shape = {self.bias.shape}."
+                                                      
+            assert new_grad_bias.shape == self.grad_bias.shape, \
+                    "Shape mismatch between size of gradient bias to be loaded by Linear layer " + \
+                   f"and expected size. Got new_grad_bias.shape = {new_grad_bias.shape} and " + \
+                   f"expected_shape = {self.grad_bias.shape}."
+            
+            self.bias      = new_bias
+            self.grad_bias = new_grad_bias
+            
+        else:
+            assert len(params) == 1, "Linear layer not using bias expects params to be loaded to be " + \
+                                     "a list containing one elements: [weight]. " + \
+                                     "Got len(params) = {}".format(len(params))
+        
+            (new_weight, new_grad_weight), = params
+        
+        assert new_weight.shape == self.weight.shape,  "Shape mismatch between size of weight to be " + \
+                                                       "loaded by Linear layer and expected size. " + \
+                                                      f"Got new_weight.shape = {new_weight.shape} " + \
+                                                      f"and expected_shape = {self.weight.shape}."
+        
+        assert new_grad_weight.shape == self.grad_weight.shape, \
+                    "Shape mismatch between size of gradient weight to be loaded by Linear layer " + \
+                   f"and expected size. Got new_grad_weight.shape = {new_grad_weight.shape} and " + \
+                   f"expected_shape = {self.grad_weight.shape}."
+            
+        self.weight      = new_weight
+        self.grad_weight = new_grad_weight
                     
 
 

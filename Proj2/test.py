@@ -38,24 +38,6 @@ def random_permutation(n):
     return random_permutation_array
 
 
-def plot_history(train_losses, train_accuracy, test_losses, test_accuracy):
-        
-    plt.plot(train_losses, label = 'Train')
-    plt.plot(test_losses, label = 'Test')
-    plt.title('Model Loss')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend()
-    plt.show()
-    
-    plt.plot(train_accuracy, label = 'Train')
-    plt.plot(test_accuracy, label = 'Test')
-    plt.title('Model Accuracy')
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epoch')
-    plt.legend()
-    plt.show()
-
 
 train_input, train_target, test_input, test_target = generate_data()
 
@@ -120,12 +102,87 @@ for epoch in range(n_epochs):
     test_losses   .append( sum(test_losses_epoch   ) / len(test_losses_epoch) )
     test_accuracy .append( sum(test_accuracy_epoch ) / len(test_accuracy_epoch) )
     
-    print("Epoch {}:\n    Train Loss    : {:.5g}\n    Train Accuracy: {:.5g}\n    Test Loss     : {:.5g}\n    Test Accuracy : {:.5g}".format(epoch + 1, train_losses[-1], train_accuracy[-1], test_losses[-1], test_accuracy[-1]))
+    print("Epoch {}:\n    Train Loss    : {:.5g}\n    Train Accuracy: {:.5g}\n    Test Loss     : {:.5g}\n    Test Accuracy : {:.5g}\n".format(epoch + 1, train_losses[-1], train_accuracy[-1], test_losses[-1], test_accuracy[-1]))
     
     if early_stopping(model, test_losses[-1]):
         break
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+def plot_history(train_losses, train_accuracy, test_losses, test_accuracy):
+        
+    plt.plot(train_losses, label = 'Train')
+    plt.plot(test_losses, label = 'Test')
+    plt.title('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.show()
+    
+    plt.plot(train_accuracy, label = 'Train')
+    plt.plot(test_accuracy, label = 'Test')
+    plt.title('Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.show()
+    
+        
+    
+import numpy as np    
+from torch import FloatTensor
+import matplotlib.patches as mpatches
+
+def plot_decision_boundary(model, xlim = (0, 1), ylim = (0, 1), xstep = 1e-3, ystep = 1e-3):
+
+    # DO NOT TRY TO REDO WITHOUT NUMPY ETC!!!!! THIS MUST BE REMOVED AD PRIORI BECAUSE THERE IS NO WAY
+    # OF CONVERTING LIST TO TENSOR WITH ONLY TORCH.EMPTY    
+    
+    xlist = []
+    ylist = []
+    for axis_lim, axis_step, axis_list in zip([xlim, ylim], [xstep, ystep], [xlist, ylist]):
+        start, end    = axis_lim
+        n_points_axis = math.ceil((end - start) / axis_step)
+                
+        axis_list.extend( [p * (end - start) / n_points_axis + start for p in range(n_points_axis + 1)] )
+    
+    XX, YY = np.meshgrid(xlist, ylist) 
+    meshgrid = [(x, y) for x in xlist for y in ylist]
+    
+    preds = [model(FloatTensor(point).reshape(-1, 1))[0].argmax() for point in meshgrid]
+    
+    preds = np.reshape(preds, XX.shape)
+    
+    
+    fig, ax = plt.subplots(1, 1, figsize = (5, 5))
+    ax.contourf(XX, YY, preds, levels = 1, colors = ['white', 'red'])
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
+    ax.set_aspect('equal')
+    ax.set_xlabel("First Tensor Dimention", size = 14)
+    ax.set_ylabel("Second Tensor Dimention", size = 14)
+    
+    
+    targets = [((FloatTensor(point) - 0.5).pow(2).sum().sqrt() < 1 / math.sqrt(2*math.pi)).long() for point in meshgrid]
+    targets = np.reshape(targets, XX.shape)
+    ax.contourf(XX, YY, targets, levels = 1, colors = ['white', 'blue'], alpha = 0.5)
+    
+    red_patch  = mpatches.Patch(color='red', label='Learnt Decision Region')
+    blue_patch = mpatches.Patch(color='blue', label='Ground Truth')
+
+    ax.legend(handles = [red_patch, blue_patch], prop = {'size': 12})
+    ax.set_title("Comparison of Learnt Decision Region\nagainst Ground Truth", fontsize = 14, fontweight = 'bold')
+                 
+    
 
 plot_history(train_losses, train_accuracy, test_losses, test_accuracy)
+plot_decision_boundary(model)

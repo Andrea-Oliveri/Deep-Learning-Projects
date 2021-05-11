@@ -14,33 +14,33 @@ class EarlyStopping(object):
         self.restore_best_weights = restore_best_weights
         self.verbose              = verbose
         
-        self.best_val_loss    = float('inf')
-        self.best_model_state = None
-        self.patience_counter = 0
+        self.best_val_loss     = float('inf')
+        self.best_model_params = None
+        self.patience_counter  = 0
 
         
     def __call__(self, model, val_loss):
         
         if val_loss < self.best_val_loss - self.min_improvement:
-            self.best_val_loss    = val_loss
-            self.best_model_state = model.state_dict()
-            self.patience_counter = 0            
+            self.best_val_loss     = val_loss
+            self.best_model_params = model.param()
+            self.patience_counter  = 0            
             
         else:
             self.patience_counter += 1
             
             if self.patience_counter >= self.patience:
                 if self.verbose:
-                    print( "Interrupting Training because no improvement was " + \
-                          f"observed in the last {self.patience} epochs. Best " + \
-                          f"val_loss = {self.best_val_loss}, current val_loss = " + \
-                          f"{val_loss}")
-                    
+                    print( "Interrupting Training because no improvement larger " + \
+                          f"than {self.min_improvement} was observed in the last " + \
+                          f"{self.patience} epochs: recorded val_loss = " + \
+                           "{:.4g}, current val_loss = {:.4g}".format(self.best_val_loss, val_loss))
+                           
                 if self.restore_best_weights:
-                    model.load_state_dict( self.stored_model_state )
+                    model.load_params( self.best_model_params )
                 
                     if self.verbose:
-                        print( "Restoring best model weights.")
+                        print("Restoring best model weights.")
                 
                 return True
             

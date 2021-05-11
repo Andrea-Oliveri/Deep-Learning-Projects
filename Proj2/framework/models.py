@@ -46,3 +46,10 @@ class Sequential(Module):
         
     def param(self):
         return [layer.param() for layer in self.layers]
+    
+    def load_params(self, params):
+        assert len(params) == len(self.layers),  "Parameters to load in Sequential model should be a " + \
+                                                f"list of length len(n_layers) = {len(self.layers)}. " + \
+                                                f"Got len(parameters_to_load) = {len(params)}."
+        for layer, layer_params in zip(self.layers, params):
+            layer.load_params(layer_params)
