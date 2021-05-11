@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import math
-from torch import empty
-
-
 class EarlyStopping(object):
     
     def __init__(self, min_improvement = 0., patience = 10, verbose = True,
