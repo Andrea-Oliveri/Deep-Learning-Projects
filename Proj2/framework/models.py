@@ -6,9 +6,6 @@ from .modules import Module
 
 class Sequential(Module):
     
-    def __init__(self): # learning rate, optimizer ?
-        self.layers = []
-        
     def __init__(self, *layers):
         # If the layers were given as a single list or tuple rather than as args.
         if len(layers) == 1 and type(layers[0]) in (tuple, list):
@@ -34,10 +31,6 @@ class Sequential(Module):
         
         for layer in self.layers[::-1]:
             gradwrtinput = layer.backward(*gradwrtinput)
-            
-            
-        # THIS IS JUST FOR DEBUG. REMOVE AT END
-        return gradwrtinput
     
             
     def update_params(self, lr):

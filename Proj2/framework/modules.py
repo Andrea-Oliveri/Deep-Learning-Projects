@@ -131,7 +131,7 @@ class Linear(Module):
                     
 
 
-class Relu(Module):
+class ReLU(Module):
         
     def forward(self, *inputs):
         self.forward_pass_inputs = inputs
