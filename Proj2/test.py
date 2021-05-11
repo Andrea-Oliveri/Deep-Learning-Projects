@@ -7,16 +7,9 @@ set_grad_enabled(False)
 from framework.models import Sequential
 from framework.modules import Linear, Relu, Tanh
 from framework.losses import MSE
+from framework.callbacks import EarlyStopping
 
-
-
-# IMPROVEMENTS:
-#    - Optimizer must be SGD, but we can create a lr scheduler which adapts learning
-#      rate based on epoch number.
-#    - Batch inference? May be hard, but ideally if we provide a tensor with a batch size
-#      dimention, make computations for whole batch in one go. Is useful only of validation
-#      set inference (to avoid looping) 
-
+import matplotlib.pyplot as plt
 
 
 def generate_data(n_training_samples = 1000, n_test_samples = 1000):
@@ -46,7 +39,7 @@ def random_permutation(n):
 
 
 def plot_history(train_losses, train_accuracy, test_losses, test_accuracy):
-    
+        
     plt.plot(train_losses, label = 'Train')
     plt.plot(test_losses, label = 'Test')
     plt.title('Model Loss')
@@ -76,10 +69,11 @@ model = Sequential(Linear(2 , 25, weight_initializer = "he_normal", bias_initial
                    Tanh())
 criterion = MSE()
 
-
-
-
 n_epochs = 50
+lr = 1e-3
+early_stopping = EarlyStopping(patience = 20)
+
+
 train_losses   = []
 train_accuracy = []
 test_losses    = []
@@ -104,7 +98,7 @@ for epoch in range(n_epochs):
         grad_loss = criterion.compute_gradient(sample_target, prediction)
         model.backward(grad_loss)
         
-        model.update_params(1e-3)
+        model.update_params(lr)
         
     
     test_losses_epoch   = []
@@ -119,14 +113,19 @@ for epoch in range(n_epochs):
         loss = criterion.compute(sample_target, prediction)
         test_losses_epoch.append(loss)
         test_accuracy_epoch.append(prediction.argmax() == sample_target.argmax())
-          
         
-    train_losses  .append( sum(train_losses_epoch) / len(train_losses_epoch) )
+        
+    train_losses  .append( sum(train_losses_epoch  ) / len(train_losses_epoch) )
     train_accuracy.append( sum(train_accuracy_epoch) / len(train_accuracy_epoch) )
-    test_losses   .append( sum(test_losses_epoch) / len(test_losses_epoch) )
-    test_accuracy .append( sum(test_accuracy_epoch) / len(test_accuracy_epoch) )
+    test_losses   .append( sum(test_losses_epoch   ) / len(test_losses_epoch) )
+    test_accuracy .append( sum(test_accuracy_epoch ) / len(test_accuracy_epoch) )
     
     print("Epoch {}:\n    Train Loss    : {:.5g}\n    Train Accuracy: {:.5g}\n    Test Loss     : {:.5g}\n    Test Accuracy : {:.5g}".format(epoch + 1, train_losses[-1], train_accuracy[-1], test_losses[-1], test_accuracy[-1]))
+    
+    if early_stopping(model, test_losses[-1]):
+        break
+    
+    
     
 
 plot_history(train_losses, train_accuracy, test_losses, test_accuracy)
