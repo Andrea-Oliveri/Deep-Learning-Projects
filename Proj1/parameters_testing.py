@@ -5,10 +5,12 @@ from models import *
 from trainings import *
 from utils import *
 
+#TODO Create real parameters lists
+
 train_input, train_target, train_classes, test_input, test_target, test_classes = [x.cuda() for x in prologue.generate_pair_sets(1000)]
 
 for model in [MLP,MLPAux,ConvNet,ConvNetAux]:
-    #TODO Create real parameters lists
+
     print(f'Computing parameters sets for model : {model.__name__} ...')
     ps=[0.5]
     nb_hiddens=[100]
@@ -21,4 +23,5 @@ for model in [MLP,MLPAux,ConvNet,ConvNetAux]:
     
 
     print(f'The five best parameters set are for {model.__name__} are : \n{errors_test_comparison[errors_test_comparison[:,0].argsort()][:5]}')
+#Shows all figures at the end of training    
 plt.show()

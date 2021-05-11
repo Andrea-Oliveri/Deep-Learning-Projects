@@ -1,6 +1,8 @@
 from utils import weight_reset, train_model, train_model_aux, plot_loss
 import torch
 
+#TODO Correct the shuffling
+#TODO Add verification set
 
 def parameters_training(model_empty, train_input, train_target, train_classes, test_input, test_target, test_classes,\
                         ps, nb_hiddens, betas, mini_batch_sizes, lrs, nb_epochs ):
@@ -103,4 +105,3 @@ def parameters_training(model_empty, train_input, train_target, train_classes, t
 
     return   torch.tensor(errors_train_comparison), torch.tensor(errors_test_comparison), torch.tensor(errors_train_digits), torch.tensor(errors_test_digits)
         
-#TODO Correct the shuffling

@@ -2,6 +2,9 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
+#TODO Try ConvNet with different stride
+#TODO Try L2 Regularization
+#TODO Add implimentation of early stopping
 
 class MLP(nn.Module):
     """
@@ -162,5 +165,3 @@ class ConvNetAux(nn.Module):
         x = self.fc2(x)
         return x, digits_pred
 
-#TODO Try ConvNet with different stride
-#     Try L2 Regularization
