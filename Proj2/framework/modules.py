@@ -46,6 +46,8 @@ class Linear(Module):
         
         outputs = []
         for input_tensor in inputs:
+            assert input_tensor.ndim == 2 and input_tensor.shape[-1] == 1, f"Linear layer expects input of shape (n_dims, 1). Got {input_tensor.shape}"
+
             output = self.weight @ input_tensor
             
             if self.use_bias:
