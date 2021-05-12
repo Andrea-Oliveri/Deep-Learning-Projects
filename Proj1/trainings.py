@@ -1,8 +1,8 @@
-from utils import weight_reset, train_model, train_model_aux, plot_loss
+from utils import train_model, plot_loss
 import torch
+import dlc_practical_prologue as prologue
 
-#TODO Correct the shuffling
-#TODO Add verification set
+
 
 def parameters_training(model_empty, train_input, train_target, train_classes, test_input, test_target, test_classes,\
                         ps, nb_hiddens, betas, mini_batch_sizes, lrs, nb_epochs ):
@@ -30,10 +30,10 @@ def parameters_training(model_empty, train_input, train_target, train_classes, t
             Tensor containing [errors_test_comparison_final, p, nb_hidden, beta, mini_batch_size, lrs, nb_epoch ] for each set of parameters
     '''
 
-    errors_train_digits      =[]
-    errors_train_comparison  =[]
-    errors_test_digits       =[]
-    errors_test_comparison   =[]
+    errors_train_digits      = []
+    errors_train_comparison  = []
+    errors_test_digits       = []
+    errors_test_comparison   = []
     
     for p in ps:
         for nb_hidden in nb_hiddens:
@@ -42,6 +42,9 @@ def parameters_training(model_empty, train_input, train_target, train_classes, t
                     for nb_epoch in nb_epochs:
                         if model_empty.__name__.endswith('Aux'):
                             for beta in betas :
+                                
+                                train_input, train_target, train_classes, test_input, test_target, test_classes = [x.cuda() for x in prologue.generate_pair_sets(1000)]
+
                                 #Reset model parameters
                                 model=model_empty(p=p,nb_hidden=nb_hidden).cuda()
                                 space=''
@@ -58,7 +61,13 @@ def parameters_training(model_empty, train_input, train_target, train_classes, t
                                 # test_input=test_input[perm]
                                 # test_target=test_target[perm]
                                 
-                                loss_train, loss_test, errors_train, errors_test=train_model_aux(model, train_input, train_target, train_classes, test_input, test_target, test_classes, beta=beta, lr=lr, mini_batch_size=mini_batch_size, nb_epochs=nb_epoch)
+                                loss_train, loss_test, errors_train, errors_test=train_model(model = model, train_input = train_input, 
+                                                                                             train_target = train_target, 
+                                                                                             train_classes = train_classes, 
+                                                                                             test_input = test_input,
+                                                                                             test_target = test_target,
+                                                                                             test_classes = test_classes,
+                                                                                             beta = beta, lr = lr, mini_batch_size=mini_batch_size, nb_epochs=nb_epoch, use_auxiliary_loss = True)
 
                                 plot_loss(loss_train, loss_test, errors_train, errors_test)
                                 
@@ -75,6 +84,9 @@ def parameters_training(model_empty, train_input, train_target, train_classes, t
                                 print('\n\n')
 
                         else:
+                            
+                            train_input, train_target, train_classes, test_input, test_target, test_classes = [x.cuda() for x in prologue.generate_pair_sets(1000)]
+
                             #Reset model parameters
                             model=model_empty(p=p,nb_hidden=nb_hidden).cuda()
                             space=''
@@ -90,7 +102,10 @@ def parameters_training(model_empty, train_input, train_target, train_classes, t
                             # test_input=test_input[perm]
                             # test_target=test_target[perm]
 
-                            loss_train, loss_test, errors_train, errors_test=train_model(model, train_input, train_target, test_input, test_target,lr=lr, mini_batch_size=mini_batch_size, nb_epochs=nb_epoch)
+                            loss_train, loss_test, errors_train, errors_test=train_model(model = model, train_input = train_input, 
+                                                                                         train_target = train_target, 
+                                                                                         test_input = test_input, 
+                                                                                         test_target = test_target, lr=lr, mini_batch_size=mini_batch_size, nb_epochs=nb_epoch)
                             
                             plot_loss(loss_train, loss_test, errors_train, errors_test)
 
@@ -103,5 +118,5 @@ def parameters_training(model_empty, train_input, train_target, train_classes, t
                             print('\n\n')
 
 
-    return   torch.tensor(errors_train_comparison), torch.tensor(errors_test_comparison), torch.tensor(errors_train_digits), torch.tensor(errors_test_digits)
+    return torch.tensor(errors_train_comparison), torch.tensor(errors_test_comparison), torch.tensor(errors_train_digits), torch.tensor(errors_test_digits)
         
