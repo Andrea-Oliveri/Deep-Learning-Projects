@@ -4,7 +4,6 @@ from torch.nn import functional as F
 
 #TODO Try ConvNet with different stride
 #TODO Try L2 Regularization
-#TODO Add implimentation of early stopping
 
 class MLP(nn.Module):
     """
@@ -18,13 +17,13 @@ class MLP(nn.Module):
             Prediction of the comparison
     """
 
-    def __init__(self, p ,nb_hidden):
+    def __init__(self, p, nb_hidden1, nb_hidden2):
         super().__init__()
-        self.fc1 = nn.Linear(392, nb_hidden)
-        self.dropout1 = nn.Dropout(p=p)
-        self.fc2 = nn.Linear(nb_hidden, 20)
-        self.dropout2 = nn.Dropout(p=p)
-        self.fc3 = nn.Linear(20, 2)
+        self.fc1 = nn.Linear(392, nb_hidden1)
+        self.dropout1 = nn.Dropout(p = p)
+        self.fc2 = nn.Linear(nb_hidden1, nb_hidden2)
+        self.dropout2 = nn.Dropout(p = p)
+        self.fc3 = nn.Linear(nb_hidden2, 2)
 
     def forward(self, x):
         x = x.view(-1, 392)
@@ -54,7 +53,7 @@ class MLPAux(nn.Module):
 
 
 
-    def __init__(self, p ,nb_hidden):
+    def __init__(self, p, nb_hidden):
         super().__init__()
         self.fc1 = nn.Linear(196, nb_hidden)
         self.dropout1 = nn.Dropout(p=p)
