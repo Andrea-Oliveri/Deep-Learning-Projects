@@ -1,10 +1,20 @@
 # -*- coding: utf-8 -*-
 
 class EarlyStopping(object):
+    """TO DOOOOOOOOOOOOOOOO"""
     
     def __init__(self, min_improvement = 0., patience = 10, verbose = True,
                  restore_best_weights = True):
-        
+        """TO DOOOOOOOOOOOOOOOO
+        Args:
+            min_improvement::[float]
+            
+            patience::[int]
+            
+            verbose::[bool]
+            
+            restore_best_weights::[bool]
+        """
         self.min_improvement      = min_improvement
         self.patience             = patience
         self.restore_best_weights = restore_best_weights
@@ -14,9 +24,17 @@ class EarlyStopping(object):
         self.best_model_params = None
         self.patience_counter  = 0
 
-        
     def __call__(self, model, val_loss):
-        
+        """TO DOOOOOOOOOOOOOOOO
+        Args:
+            model::[????]
+            
+            val_loss::[torch.Tensor]
+            
+        Returns:
+            ??::[bool]
+            
+        """
         if val_loss < self.best_val_loss - self.min_improvement:
             self.best_val_loss     = val_loss
             self.best_model_params = model.param()

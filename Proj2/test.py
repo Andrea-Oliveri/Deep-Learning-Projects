@@ -39,10 +39,7 @@ def generate_data(n_training_samples = 1000, n_test_samples = 1000):
     """
     all_inputs = empty(n_training_samples + n_test_samples, 2).uniform_()
 
-    all_classes = ((all_inputs - 0.5).pow(2).sum(axis = 1).sqrt() < 1 / math.sqrt(2*math.pi)).long()
-    all_target  = empty(n_training_samples + n_test_samples, 2).zero_()
-    all_target[all_classes == 0, 0] = 1
-    all_target[all_classes == 1, 1] = 1
+    all_target = ((all_inputs - 0.5).pow(2).sum(axis = 1).sqrt() < 1 / math.sqrt(2*math.pi)).long()
     
     train_input , test_input  = all_inputs.split([n_training_samples, n_test_samples])
     train_target, test_target = all_target.split([n_training_samples, n_test_samples])
@@ -117,13 +114,17 @@ def train_or_predict_epoch(model, inputs, targets, criterion, training, lr = Non
         sample_target = targets[idx].reshape(-1, 1)
         
         prediction, = model(sample_input)
-        
+        predicted_class = (prediction > 0.5).long()
+                
         loss = criterion(sample_target, prediction)
         losses    .append(loss)
-        accuracies.append(prediction.argmax() == sample_target.argmax())
+        accuracies.append((predicted_class == sample_target).squeeze())
         
         if training:
-            assert lr is not None, "No learning rate provided to train_or_predict_epoch despite parameter training = True."
+            assert lr is not None, \
+            "No learning rate provided to train_or_predict_epoch despite" + \
+            " parameter training = True."
+            
             grad_loss = criterion.backward(sample_target, prediction)
             model.backward(grad_loss)
             model.update_params(lr)
@@ -162,7 +163,7 @@ model = Sequential(Linear(2 , 25, weight_initializer = "he_normal", bias_initial
                    ReLU(),
                    Linear(25, 25, weight_initializer = "he_normal", bias_initializer = "zeros"),
                    ReLU(),
-                   Linear(25, 2 , weight_initializer = "xavier_normal", bias_initializer = "zeros"),
+                   Linear(25, 1 , weight_initializer = "xavier_normal", bias_initializer = "zeros"),
                    Tanh())
 
 criterion = LossMSE()
@@ -181,10 +182,19 @@ for epoch in range(n_epochs):
     lr = lr_scheduler()
     
     # Training on Training set.
-    train_loss_epoch, train_accuracy_epoch = train_or_predict_epoch(model, train_input, train_target, criterion, training = True, lr = lr)
+    train_loss_epoch, train_accuracy_epoch = train_or_predict_epoch(model, 
+                                                                    train_input, 
+                                                                    train_target, 
+                                                                    criterion, 
+                                                                    training = True, 
+                                                                    lr = lr)
     
     # Evaluating current model on Test set.
-    test_loss_epoch , test_accuracy_epoch  = train_or_predict_epoch(model, test_input , test_target , criterion, training = False)
+    test_loss_epoch , test_accuracy_epoch  = train_or_predict_epoch(model, 
+                                                                    test_input,
+                                                                    test_target,
+                                                                    criterion, 
+                                                                    training = False)
       
     # Storing  and logging losses and accuracies for current epoch.
     train_losses  .append( train_loss_epoch )
@@ -202,8 +212,16 @@ for epoch in range(n_epochs):
     if early_stopping(model, test_loss_epoch):
         break
 
-final_train_loss, final_train_accuracy = train_or_predict_epoch(model, train_input, train_target, criterion, training = False)
-final_test_loss , final_test_accuracy  = train_or_predict_epoch(model, test_input , test_target , criterion, training = False)
+final_train_loss, final_train_accuracy = train_or_predict_epoch(model, 
+                                                                train_input, 
+                                                                train_target, 
+                                                                criterion, 
+                                                                training = False)
+final_test_loss , final_test_accuracy  = train_or_predict_epoch(model, 
+                                                                test_input, 
+                                                                test_target, 
+                                                                criterion, 
+                                                                training = False)
 
 # Logging losses and accuracy at end of training.
 print("Final Model:")
@@ -239,7 +257,7 @@ def plot_decision_boundary(model, xlim = (0, 1), ylim = (0, 1), xstep = 1e-3, ys
     XX, YY = np.meshgrid(xlist, ylist) 
     meshgrid = [(x, y) for x in xlist for y in ylist]
     
-    preds = [model(FloatTensor(point).reshape(-1, 1))[0].argmax() for point in meshgrid]
+    preds = [model(FloatTensor(point).reshape(-1, 1))[0] > 0.5 for point in meshgrid]
     
     preds = np.reshape(preds, XX.shape)
     
