@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .modules import Module
+from .module import Module
 
 
 class Sequential(Module):

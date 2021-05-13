@@ -5,7 +5,7 @@ from torch import empty, set_grad_enabled
 set_grad_enabled(False)
 
 from framework.models import Sequential
-from framework.modules import Linear, ReLU, Tanh
+from framework.layers import Linear, ReLU, Tanh
 from framework.losses import LossMSE
 from framework.callbacks import EarlyStopping
 from framework.learning_rate_schedules import TimeDecayLR
