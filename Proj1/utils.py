@@ -3,7 +3,6 @@ from torch import nn
 from torch import optim
 
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import draw
 from callbacks import EarlyStopping
 
 
@@ -121,7 +120,8 @@ def train_model(
     use_auxiliary_loss = False,
     train_classes = None,
     test_classes = None,
-    beta=None
+    beta=None,
+    verbose = False
 ):
     """
     Trains a model which accounts for auxiliary loss.
@@ -148,19 +148,19 @@ def train_model(
     
     criterion_comparison = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr = lr)
-    early_stopping = EarlyStopping(patience = patience)
+    early_stopping = EarlyStopping(patience = patience, verbose = verbose)
     
-    loss_train = []
-    loss_test  = []
+    train_loss = []
+    test_loss  = []
     
-    accuracy_train = []
-    accuracy_test  = []
+    train_accuracy = []
+    test_accuracy  = []
     
     for _ in range(nb_epochs):       
 
         # If use_auxiliary_loss is false, parameters classes and criterion_digits
         # will be ignored and can therefore be left to None. 
-        loss_train_epoch, accuracy_train_epoch = \
+        train_loss_epoch, train_accuracy_epoch = \
             train_or_predict_epoch(model = model, 
                                    inputs = train_input, 
                                    targets = train_target,
@@ -178,7 +178,7 @@ def train_model(
             
             # If use_auxiliary_loss is false, parameters classes and criterion_digits
             # will be ignored and can therefore be left to None.
-            loss_test_epoch, accuracy_test_epoch = \
+            test_loss_epoch, test_accuracy_epoch = \
                 train_or_predict_epoch(model = model, 
                                        inputs = test_input, 
                                        targets = test_target,
@@ -192,18 +192,20 @@ def train_model(
             
             model.train()
         
-        loss_train.append(loss_train_epoch)
-        loss_test .append(loss_test_epoch)
-        accuracy_train.append(accuracy_train_epoch)
-        accuracy_test .append(accuracy_test_epoch)
+        train_loss.append(train_loss_epoch)
+        test_loss .append(test_loss_epoch)
+        train_accuracy.append(train_accuracy_epoch)
+        test_accuracy .append(test_accuracy_epoch)
             
         # Early Stopping uses the total loss (combination of digits prediction and 
         # comparison predictions) to decide.
-        if early_stopping(model, loss_test_epoch[-1]):
+        if early_stopping(model, test_loss_epoch[-1]):
             break
 
-    return torch.stack(loss_train), torch.stack(loss_test), \
-           torch.stack(accuracy_train), torch.stack(accuracy_test)
+    return {'train_loss'    : torch.stack(train_loss)    .requires_grad_(False),
+            'test_loss'     : torch.stack(test_loss )    .requires_grad_(False),
+            'train_accuracy': torch.stack(train_accuracy).requires_grad_(False),
+            'test_accuracy' : torch.stack(test_accuracy) .requires_grad_(False) }
 
 
 
@@ -243,11 +245,58 @@ def plot_loss(loss_train, loss_test, errors_train, errors_test):
     ax_errors.set_ylabel("accuracy")
     ax_errors.set_xlabel("# epochs")
     
-    draw()
+    plt.draw()
 
 
 def count_nb_parameters(model):
-    all_parameters       = sum([param.numel() for param in model.parameters()])
-    trainable_parameters = sum([param.numel() for param in model.parameters() if param.requires_grad])
+    nb_parameters = sum([param.numel() for param in model.parameters()])
 
-    return trainable_parameters, all_parameters
+    return nb_parameters    
+
+
+def plot_and_analyse_results(results):
+
+    metrics = results[0].keys()
+    grouped_metrics = {metric: [res[metric] for res in results] for metric in metrics}
+
+    early_stop_epoch = [torch.argmin(test_loss) for test_loss in grouped_metrics['test_loss']]
+    mean_early_stop_epoch = sum(early_stop_epoch) / len(early_stop_epoch)
+
+    # Draw metrics for each run individually.
+    fig, axes = plt.subplots(2, 2, figsize = (10, 5))
+        
+    for ax, metric in zip(axes.ravel(), metrics):
+        metric_name = metric.replace('_', ' ').title()
+        ax.set_xlabel("Epoch Number")
+        ax.set_ylabel(metric_name)
+        
+        for metric_training in grouped_metrics[metric]:
+            ax.plot(metric_training)
+
+        ax.vlines(mean_early_stop_epoch, *ax.get_ylim(), linestyle = '--', color = 'red')
+
+    
+    plt.tight_layout()
+    plt.show()
+    
+    # Draw average metrics over all runs.
+    fig, axes = plt.subplots(2, 2, figsize = (10, 5))
+        
+    for ax, metric in zip(axes.ravel(), metrics):
+        metric_name = metric.replace('_', ' ').title()
+        ax.set_xlabel("Epoch Number")
+        ax.set_ylabel(metric_name)
+        
+        min_nb_epochs = min([len(m) for m in grouped_metrics[metric]])
+        metric_same_nb_epochs = [m[:min_nb_epochs] for m in grouped_metrics[metric]]
+        mean_metric = torch.stack(metric_same_nb_epochs).mean(axis = 0)
+        ax.plot(mean_metric)
+        ax.vlines(mean_early_stop_epoch, *ax.get_ylim(), linestyle = '--', color = 'red')
+
+    
+    plt.tight_layout()
+    plt.show()
+
+
+    # Collect Statistics
+    #metrics_at_early_stop = early_stop_epoch
