@@ -8,6 +8,19 @@ with open(filename, "rb") as file:
     data = pickle.load(file)
     
 
+for i in range(len(data)):
+    params, res = data[i]
+    
+    if type(res) == dict:
+        new_res = []
+        
+        for k in ['train_loss', 'test_loss', 'train_accuracy', 'test_accuracy']:
+            new_res.append( res[k] )
+        
+        
+        data[i] = (params, new_res)
+    
+
 if 'Aux' not in filename:
     data = [m for m in data if 'beta' not in m[0]] # Corrects an error in ConvNet_measures. MLP_measures untouched by this.
     # results[1] for test_loss, results[-1] for test_acc
