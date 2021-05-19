@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 import pandas
 
-filename = "ConvNetAux_measures.pkl"
+filename = "../measures/MLP_measures.pkl"
 
 with open(filename, "rb") as file:
     data = pickle.load(file)
@@ -34,4 +34,3 @@ df = pandas.DataFrame(data_final_test_acc).sort_values('test_acc', ascending = F
 
 
 print(df[:20].to_string(max_rows = None, max_cols = None, index = False))
-

@@ -18,7 +18,7 @@ def train_all_params(model_creating_func, params_dict):
     dtypes = [torch.tensor(v).dtype for v in params_dict.values()]
     params_linspaces = [torch.tensor(v).float() for v in params_dict.values()]
     
-    params_mesh = [t.ravel().type(dtypes[i]) for i, t in enumerate(torch.meshgrid(*params_linspaces))]
+    params_mesh = [t.flatten().type(dtypes[i]) for i, t in enumerate(torch.meshgrid(*params_linspaces))]
     
     warnings.filterwarnings("default")
     
@@ -26,7 +26,7 @@ def train_all_params(model_creating_func, params_dict):
     
     
     
-    with open("ConvNetAux_measures.pkl", "rb") as file:
+    with open("ConvNetAux_measures_updated.pkl", "rb") as file:
         already_done = pickle.load(file)
     
     
@@ -62,7 +62,7 @@ def train_all_params(model_creating_func, params_dict):
             
             measures.append( (dict(p_dict), results) )
             
-            with open("ConvNetAux_measures.pkl", "wb") as file:
+            with open("ConvNetAux_measures_updated.pkl", "wb") as file:
                 pickle.dump(measures, file)
         except Exception as e:
             if 'Output size is too small' in str(e):
@@ -83,15 +83,15 @@ redo_cached = False
 
 # Fully connected net with 2 hidden layers. Channels are concatenated into the
 # same vector at input.
-#pickle_path = "MLP_measures.pkl"
-#if redo_cached or not os.path.exists(pickle_path):
+# pickle_path = "MLP_measures.pkl"
+# if True or redo_cached or not os.path.exists(pickle_path):
 
-#    measures = train_all_params(MLP, {'p': [0.0, 0.2, 0.4, 0.6, 0.8, 0.95],
-#                                      'nb_hidden1': [20, 50, 70, 100],
-#                                      'nb_hidden2': [10, 20, 30, 50],
+#    measures = train_all_params(MLP, {'p': [0.4,0.5],
+#                                      'nb_hidden1': [100],
+#                                      'nb_hidden2': [20, 30],
 #                                      'nb_epochs': [200],
-#                                      'mini_batch_size': [10, 50, 100, 200, 500],
-#                                      'lr': [0.001]}) # Adam's default. Should adapt it anyway.
+#                                      'mini_batch_size': [10,20,50],
+#                                      'lr': [0.001,0.0001]}) # Adam's default. Should adapt it anyway.
                            
 #    with open(pickle_path, "wb") as file:
 #        pickle.dump(measures, file)
@@ -103,47 +103,46 @@ redo_cached = False
 # When beta = 1, the auxiliary loss is ignored -> Only final loss counts. May want to perform 
 # comparison to see how useful auxiliary loss is over just treating channels separately.
 # pickle_path = "MLPAux_measures.pkl"
-# if redo_cached or not os.path.exists(pickle_path):
+# if True or redo_cached or not os.path.exists(pickle_path):
 
-#     measures = train_all_params(MLPAux, {'p': [0.0, 0.2, 0.4, 0.6, 0.8, 0.95],
-#                                          'nb_hidden': [20, 50, 70, 100],
+#     measures = train_all_params(MLPAux, {'p': [0.2],
+#                                          'nb_hidden': [100],
 #                                          'nb_epochs': [400],
-#                                          'mini_batch_size': [10, 50, 100, 200, 500],
-#                                          'lr': [0.001], # Adam's default. Should adapt it anyway.
-#                                          'beta': [0.1, 0.3, 0.5, 0.7, 0.9, 1.0]})
+#                                          'mini_batch_size': [10,100],
+#                                          'lr': [0.001,0.0001], # Adam's default. Should adapt it anyway.
+#                                          'beta': [0.7,0.8,0.9]})
                            
 #     with open(pickle_path, "wb") as file:
 #         pickle.dump(measures, file)
         
         
-#pickle_path = "ConvNet_measures.pkl"
-#if redo_cached or not os.path.exists(pickle_path):
-
-#measures = train_all_params(ConvNet, {'p': [0.0, 0.2, 0.4, 0.6, 0.8],
-#                                   'nb_hidden': [10, 20, 30, 50],
-#                                   'ksize': [2, 3, 4, 5],
-#                                   'padding': [100, 101], # 100 is valid, 101 is same
-#                                   'n_chan_1': [8, 16, 32, 64],
-#                                   'n_chan_2': [8, 16, 32, 64],
-#                                   'nb_epochs': [200],
-#                                   'mini_batch_size': [10],
-#                                   'lr': [0.001]}) # Adam's default. Should adapt it anyway.
-                       
-# with open(pickle_path, "wb") as file:
-#     pickle.dump(measures, file)
+# pickle_path = "ConvNet_measures_updated.pkl"
+# if True or redo_cached or not os.path.exists(pickle_path):
+    # measures = train_all_params(ConvNet, {'p': [0.6],
+    #                                 'nb_hidden': [20, 40],
+    #                                 'k_size': [4],
+    #                                 'padding': [1], # 0 or 1
+    #                                 'nb_channel_1': [32, 64],
+    #                                 'nb_channel_2': [64],
+    #                                 'nb_epochs': [500],
+    #                                 'mini_batch_size': [10],
+    #                                 'lr': [0.001]}) # Adam's default. Should adapt it anyway.
+                        
+with open(pickle_path, "wb") as file:
+    pickle.dump(measures, file)
         
-pickle_path = "ConvNetAux_measures.pkl"
+pickle_path = "ConvNetAux_measures_updated.pkl"
 if True or redo_cached or not os.path.exists(pickle_path):
 
-    measures = train_all_params(ConvNetAux, {'p': [0.0, 0.2, 0.4, 0.6, 0.8],
-                                      'ksize': [2, 3, 4, 5],
-                                      'padding': [100, 101], # 100 is valid, 101 is same
-                                      'n_chan_1': [8, 16, 32, 64],
-                                      'n_chan_2': [8, 16, 32, 64],
-                                      'nb_epochs': [500],
+    measures = train_all_params(ConvNetAux, {'p': [0.6],
+                                      'k_size': [5],
+                                      'padding': [1], # 0 or 1
+                                      'nb_channel1': [32],
+                                      'nb_channel2': [64],
+                                      'nb_epochs': [501],
                                       'mini_batch_size': [200],
-                                      'lr': [0.001],
-                                      'beta': [0.1, 0.3, 0.5, 0.7, 0.9, 1.0]}) # Adam's default. Should adapt it anyway.
+                                      'lr': [0.001],# Adam's default. Should adapt it anyway.
+                                      'beta': [0.7]}) 
                            
     with open(pickle_path, "wb") as file:
         pickle.dump(measures, file)
