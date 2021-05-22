@@ -29,15 +29,27 @@ def train_or_predict_epoch(model, inputs, targets,
         targets::[torch.Tensor]
             Tensor of shape (n_samples, 2) containing labels in one-hot
             format corresponding to inputs.
-        criterion::[torch.nn.Loss]
-            Instance of torch.nn._Loss used to calcolate loss of each sample from
-            target and model predictions.
+        criterion_comparison::[torch.nn.Loss]
+            Instance of torch.nn._Loss used to calculate loss of each sample from
+            target and model predictions for comparison.
+        criterion_digit::[torch.nn.Loss]
+            Instance of torch.nn._Loss used to calculate loss of each sample from
+            target and model predictions for digit.
         training::[boolean]
             Boolean flag determining if inputs samples should be parsed in random
             order and if backpropagation and parameters update should be performed.
         optimizer::[torch.optim.Optimizer]
             Optimizer to use for parameters update. If training is False, this
             parameter is ignored.
+        use_auxiliary_loss::[boolean]
+            Boolean flag determining if model is using auxiliary loss.
+        classes::[torch.Tensor]
+            Tensor of shape (n_samples) containing the digit value of the
+            corresponding input.
+        beta::[float]
+            Coefficient used in models using auxiliary loss to weight the comparison and
+            digit loss in total loss. loss_tot= beta * loss_comparison + (1. - beta) * loss_digits
+
     Returns:
         mean_loss::[float]
             Mean loss of model predictions computed using all samples in inputs and
@@ -119,7 +131,45 @@ def train_model(
     verbose = False
 ):
     """
-    Trains a model which accounts for auxiliary loss.
+    Initialize the training parameters of a model.
+    Args:
+        model::[torch.nn.Module]
+            Instance of Module used to generate predictions for each sample in 
+            input, and if training flag is True, whose parameters are updated
+            via SGD.
+        train_input::[torch.Tensor]
+            Tensor of shape (n_samples, 2) containing points to be used during 
+            training with the model.
+        train_target::[torch.Tensor]
+            Tensor of shape (n_samples, 2) containing labels in one-hot
+            format corresponding to inputs.
+        train_classes::[torch.Tensor]
+            Tensor of shape (n_samples) containing the digit value of the
+            corresponding input.
+        test_input::[torch.Tensor]
+            Tensor of shape (n_samples, 2) containing points to be used during 
+            testing with the model.
+        test_target::[torch.Tensor]
+            Tensor of shape (n_samples, 2) containing labels in one-hot
+            format corresponding to inputs.
+        test_classes::[torch.Tensor]
+            Tensor of shape (n_samples) containing the digit value of the
+            corresponding input.
+        nb_epochs::[int]
+            Number of epochs for which to train the model.
+        mini_batch_size::[float]
+            Batch size to be used during SGD.
+        lr::[float]
+            Learning rate used in the optimizer.
+        patience::[int]
+            Set the patience level of EarlyStopping
+        verbose::[int]
+            Set the verbose level of EarlyStopping.
+        use_auxiliary_loss::[boolean]
+            Boolean flag determining if model is using auxiliary loss.
+        beta::[float]
+            Coefficient used in models using auxiliary loss to weight the comparison and
+            digit loss in total loss. loss_tot= beta * loss_comparison + (1. - beta) * loss_digits
     Returns : 
         loss_train::[Tensor]
             Tensor of shape [nb_epochs, 1, 1] containing  loss_comparison, loss_digits for each epoch of the training
@@ -204,8 +254,26 @@ def train_model(
 
 
 def train_multiple_times(model_creating_func, parameters):
+    '''
+    Trains a model with a certain set of parameters for a given number of repetitions.
 
-    print(f"Collecting measures for {model_creating_func.__name__} Model")
+    Args:
+        model_creating_func::[torch.nn.Module]
+            Instance of Module to be initialized
+        parameters::[dict]
+            Dictionary containing the relevant parameters for model creation and training.
+            On top of that contains :
+                n_repetitions::[int]
+                    Number of repetitions to be made for a certain model
+                n_samples_dataset::[int]
+                    Number of samples to be used during model training and testing.
+
+    Returns:
+        results::[list]
+            List containing dictionaries of type {'train_loss', 'test_loss', 'train_accuracy', 'test_accuracy'}
+            of n_repetition runs.
+    '''
+    print(f"Collecting measures for {model_creating_func.__name__} model")
 
     n_repetitions     = parameters.pop('n_repetitions')
     n_samples_dataset = parameters.pop('n_samples_dataset')
@@ -220,8 +288,8 @@ def train_multiple_times(model_creating_func, parameters):
     results = []
     
     for i in range(n_repetitions):
-        print(f"Performing Measure {i+1} of {n_repetitions}", end = "\r")
-        train_input, train_target, train_classes, test_input, test_target, test_classes = [x.cuda() for x in prologue.generate_pair_sets(n_samples_dataset)]
+        print(f"Performing measure {i+1} of {n_repetitions}", end = "\r")
+        train_input, train_target, train_classes, test_input, test_target, test_classes = prologue.generate_pair_sets(n_samples_dataset)
 
         model = model_creating_func(**params_model).cuda()
         
@@ -235,5 +303,5 @@ def train_multiple_times(model_creating_func, parameters):
                                           **params_training)
         
         results.append( results_repetition )
-
+    print('\n')
     return results
