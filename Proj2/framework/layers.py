@@ -40,7 +40,7 @@ class Linear(Module):
             self.grad_bias = empty(self.bias.shape).zero_()
 
     def forward(self, *inputs):
-        """Perform the forward pass for each input: compute the outputs of the 
+        """Performs the forward pass for each input: compute the outputs of the 
         layer given inputs.
         Args:
             inputs::[tuple]
@@ -69,7 +69,10 @@ class Linear(Module):
         return tuple(outputs)
     
     def backward(self, *gradwrtoutput):
-        """TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+        """Performs the backward pass on the current layer. Returns the 
+        gradient of the loss with respect to this layer's inputs and stores
+        the gradient with respect to this layer's parameters in class attributes.
+        
         Args:
             gradwrtoutput::[tuple]
                 Tuple containing input tensors on which we wish to perform the 
@@ -178,7 +181,7 @@ class Linear(Module):
 class ReLU(Module):
         
     def forward(self, *inputs):
-        """Perform the forward pass for each input: compute the outputs of the 
+        """Performs the forward pass for each input: compute the outputs of the 
         layer given inputs. Here it just corresponds to apply the ReLU
         activation function on the inputs.
         Args:
@@ -199,7 +202,10 @@ class ReLU(Module):
         return tuple(outputs)
     
     def backward(self, *gradwrtoutput):
-        """TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+        """Performs the backward pass on the current layer. Returns the 
+        gradient of the loss with respect to this layer's inputs. This layer
+        has no parameters, so no gradient with respect to this layer's
+        parameters is stored by this method.
         Args:
             gradwrtoutput::[tuple]
                 Tuple containing input tensors on which we wish to perform the 
@@ -220,7 +226,7 @@ class ReLU(Module):
 class Tanh(Module):
         
     def forward(self, *inputs):
-        """Perform the forward pass for each input: compute the outputs of the 
+        """Performs the forward pass for each input: compute the outputs of the 
         layer given inputs. Here it just corresponds to apply the Tanh
         activation function on the inputs.
         Args:
@@ -241,7 +247,10 @@ class Tanh(Module):
         return tuple(outputs)
     
     def backward(self, *gradwrtoutput):
-        """TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+        """Performs the backward pass on the current layer. Returns the 
+        gradient of the loss with respect to this layer's inputs. This layer
+        has no parameters, so no gradient with respect to this layer's
+        parameters is stored by this method.
         Args:
             gradwrtoutput::[tuple]
                 Tuple containing input tensors on which we wish to perform the 

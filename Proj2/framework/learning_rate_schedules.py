@@ -129,11 +129,18 @@ class ExponentialDecayLR(LearningRateScheduler):
 class StepDecayLR(LearningRateScheduler):
     
     def __init__(self, initial_lr, drop_factor, iterations_drop_period):
-        """The constructor will initialize the learning rate and the TO DOOOOOOOOOOOOOOOOOOOOOOO
-        at each step for StepDecayLR.
+        """The constructor will initialize the learning rate, how often we want
+        to decrease the learning rate and the factor by how much the learning
+        rate is decrease each time for StepDecayLR.
         Args:
             lr::[float]
                 The initial learning rate of the learning rate scheduler.
+            drop_factor::[float]
+                Factor 0 < drop_factor <= 1 which is multiplied to learning
+                rate each iterations_drop_period epochs.
+            iterations_drop_period::[int]
+                Number of iterations to wait between two consecutive drops
+                in the learning rate.
         """
         self.initial_lr  = initial_lr
         self.drop_factor = drop_factor
@@ -141,7 +148,9 @@ class StepDecayLR(LearningRateScheduler):
         self.iterations  = 0
 
     def get_new_lr(self):
-        """Generate a new learning rate from the initial one, from TO DOOOOOOOOOOOOOOOOOOOOOOOO
+        """Generate a new learning rate from the initial one, the drop factor
+        and the iterations to wait between each drop. For this subclass, 
+        the learning rate decreases by a fixed factor each iterations_drop_period.
         Returns:
             lr::[float]
                 The newly generated learning rate.

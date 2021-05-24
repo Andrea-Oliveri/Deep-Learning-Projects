@@ -56,7 +56,10 @@ class Sequential(Module):
         return tuple(outputs)
     
     def backward(self, *gradwrtoutput):
-        """TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+        """Performs the backward pass on the current model. It calls the backward
+        method of each layer in the model iteratively starting from the last one
+        all the way back to the first one, giving to each the gradient of the
+        loss with respect to the output computed by the layer.
         Args:
             gradwrtoutput::[tuple]
                 Tuple containing input tensors on which we wish to perform the 

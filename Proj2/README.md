@@ -8,7 +8,8 @@ done without using autograd or the neural-network modules of pytorch.
 
 ## Folder Structure
 - `framework`: contains all the classes used to create and train deep learning models.
-    - `callbacks.py` TO DOOOOOOOOOOOOOOOOO 
+    - `callbacks.py` contains implementations of useful callbacks used during training. In
+       particular, it contains an implementation of the early stopping callback.
   
     - `initializers.py` contains a hierarchy of class for initializers. In particular, there 
        is an abstract Initializer class with several subclasses implementing different kinds

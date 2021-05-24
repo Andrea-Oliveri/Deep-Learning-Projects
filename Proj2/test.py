@@ -136,25 +136,6 @@ def train_or_predict_epoch(model, inputs, targets, criterion, training, lr = Non
 
 
 
-def plot_history(train_losses, train_accuracy, test_losses, test_accuracy):
-        
-    plt.plot(train_losses, label = 'Train')
-    plt.plot(test_losses, label = 'Test')
-    plt.title('Model Loss')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend()
-    plt.show()
-    
-    plt.plot(train_accuracy, label = 'Train')
-    plt.plot(test_accuracy, label = 'Test')
-    plt.title('Model Accuracy')
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epoch')
-    plt.legend()
-    plt.show()
-
-
 train_input, train_target, test_input, test_target = generate_data()
 
 model = Sequential(Linear(2 , 25, weight_initializer = "he_normal", bias_initializer = "zeros"), 
@@ -169,7 +150,7 @@ model = Sequential(Linear(2 , 25, weight_initializer = "he_normal", bias_initial
 criterion = LossMSE()
 
 n_epochs = 500
-lr_scheduler = TimeDecayLR(initial_lr = 0.1, decay = 0.7)
+lr_scheduler = TimeDecayLR(initial_lr = 0.1, decay = 0.5)
 early_stopping = EarlyStopping(patience = 20, verbose = False)
 
 train_losses   = []
@@ -196,7 +177,7 @@ for epoch in range(n_epochs):
                                                                     criterion, 
                                                                     training = False)
       
-    # Storing  and logging losses and accuracies for current epoch.
+    # Storing and logging losses and accuracies for current epoch.
     train_losses  .append( train_loss_epoch )
     train_accuracy.append( train_accuracy_epoch )
     test_losses   .append( test_loss_epoch )
@@ -230,8 +211,39 @@ print("    Train Accuracy: {:.5g}".format(final_train_accuracy))
 print("    Test Loss     : {:.5g}".format(final_test_loss))
 print("    Test Accuracy : {:.5g}".format(final_test_accuracy))
 
-plot_history(train_losses, train_accuracy, test_losses, test_accuracy)
+
+
+
+
+
+
+
+
+
+
+
+
+
+def plot_history(train_losses, train_accuracy, test_losses, test_accuracy):    
     
+    plt.plot(train_losses, label = 'Train')
+    plt.plot(test_losses, label = 'Test')
+    plt.title('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.savefig("loss.pdf")
+    plt.show()
+    
+    plt.plot(train_accuracy, label = 'Train')
+    plt.plot(test_accuracy, label = 'Test')
+    plt.title('Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.savefig("accuracy.pdf")
+    plt.show()
+        
     
 
     
@@ -280,6 +292,10 @@ def plot_decision_boundary(model, xlim = (0, 1), ylim = (0, 1), xstep = 1e-3, ys
 
     ax.legend(handles = [red_patch, blue_patch], prop = {'size': 12}, loc='upper center', bbox_to_anchor=(0.45, -0.15), ncol = 2)
     ax.set_title("Comparison of Learnt Decision Region\nagainst Ground Truth", fontsize = 14, fontweight = 'bold')
+    
+    plt.tight_layout()
+    plt.savefig("boundary.pdf")
+    plt.show()
                  
     
 
