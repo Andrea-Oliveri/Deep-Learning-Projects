@@ -99,12 +99,14 @@ class Linear(Module):
         Returns:
             params::[list]
                 List of pairs, each composed of a parameter tensor, and its 
-                corresponding gradient tensor of same size.
+                corresponding gradient tensor of same size. The returned tensors
+                are cloned, as this is particularly important for EarlyStopping
+                when weights must be restored.
         """
-        parameters = [(self.weight, self.grad_weight)]
+        parameters = [(self.weight.clone(), self.grad_weight.clone())]
         
         if self.use_bias:
-            parameters.append( (self.bias, self.grad_bias) )
+            parameters.append( (self.bias.clone(), self.grad_bias.clone()) )
             
         return parameters
     
