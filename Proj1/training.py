@@ -107,7 +107,7 @@ def train_or_predict_epoch(model, inputs, targets,
         if use_auxiliary_loss:
             accuracy_digits = (digits_pred.argmax(axis = 1) == batch_classes).float().mean()
             losses.append( (loss_comparison, loss_digits, loss_tot) )  
-            accuracies.append( (accuracy_comparison, accuracy_digits,) )
+            accuracies.append( (accuracy_comparison, accuracy_digits) )
         else:
             losses.append( (loss_comparison, ) )  
             accuracies.append( (accuracy_comparison, ) )
@@ -120,14 +120,14 @@ def train_model(
     train_target,
     test_input,
     test_target,
-    nb_epochs=50,
-    mini_batch_size=100,
-    lr=1e-3,
+    nb_epochs = 50,
+    mini_batch_size = 100,
+    lr = 1e-3,
     patience = 20,
     use_auxiliary_loss = False,
     train_classes = None,
     test_classes = None,
-    beta=None,
+    beta = None,
     verbose = False
 ):
     """
@@ -171,14 +171,19 @@ def train_model(
             Coefficient used in models using auxiliary loss to weight the comparison and
             digit loss in total loss. loss_tot= beta * loss_comparison + (1. - beta) * loss_digits
     Returns : 
-        loss_train::[Tensor]
-            Tensor of shape [nb_epochs, 1, 1] containing  loss_comparison, loss_digits for each epoch of the training
-        loss_test::[Tensor]
-            Tensor of shape [nb_epochs, 1, 1] containing loss_comparison, loss_digits for each epoch of testing
-        errors_train::[Tensor]
-            Tensor of shape [nb_epochs, 1, 1] containing errors_comparison, errors_digits for each epoch of the training
-        errors_test
-            Tensor of shape [nb_epochs, 1, 1] containing errors_comparison, errors_digits for each epoch of testing
+        train_loss::[torch.Tensor]
+            Tensor of shape [nb_epochs, 1, 1] containing the comparison and digits loss on training set for each epoch
+        test_loss::[torch.Tensor]
+            Tensor of shape [nb_epochs, 1, 1] containing the comparison and digits loss on test set for each epoch
+        train_accuracy::[torch.Tensor]
+            Tensor of shape [nb_epochs, 1, 1] containing the accuracy of comparison and digits predictions on training set for each epoch
+        test_accuracy::[torch.Tensor]
+            Tensor of shape [nb_epochs, 1, 1] containing the accuracy of comparison and digits predictions on test set for each epoch
+        test_accuracy::[torch.Tensor]
+            Tensor of shape [nb_epochs, 1, 1] containing the accuracy of comparison and digits predictions on test set for each epoch
+        final_weights_epoch::[int]
+            Epoch number to which the final model weights correspond to. Needed to index test_accuracy and get the accuracy 
+            corresponding to epoch restored by early stopping
     """
     
     if use_auxiliary_loss:
@@ -201,7 +206,7 @@ def train_model(
     train_accuracy = []
     test_accuracy  = []
     
-    for _ in range(nb_epochs):       
+    for epoch in range(nb_epochs):       
 
         # If use_auxiliary_loss is false, parameters classes and criterion_digits
         # will be ignored and can therefore be left to None. 
@@ -245,15 +250,19 @@ def train_model(
         # Early Stopping uses the total loss (combination of digits prediction and 
         # comparison predictions) to decide.
         if early_stopping(model, test_loss_epoch[-1]):
+            final_weights_epoch = epoch - patience
             break
-
+        else:
+            final_weights_epoch = epoch
+        
     return {'train_loss'    : torch.stack(train_loss)    .requires_grad_(False),
             'test_loss'     : torch.stack(test_loss )    .requires_grad_(False),
             'train_accuracy': torch.stack(train_accuracy).requires_grad_(False),
-            'test_accuracy' : torch.stack(test_accuracy) .requires_grad_(False) }
+            'test_accuracy' : torch.stack(test_accuracy) .requires_grad_(False),
+            'final_weights_epoch': final_weights_epoch}
 
 
-def train_multiple_times(model_creating_func, parameters):
+def train_multiple_times(model_creating_func, parameters, model_name):
     '''
     Trains a model with a certain set of parameters for a given number of repetitions.
 
@@ -267,13 +276,15 @@ def train_multiple_times(model_creating_func, parameters):
                     Number of repetitions to be made for a certain model
                 n_samples_dataset::[int]
                     Number of samples to be used during model training and testing.
+        model_name::[str]
+            The name of the model which will be trained. Only needed to print on terminal.
 
     Returns:
         results::[list]
             List containing dictionaries of type {'train_loss', 'test_loss', 'train_accuracy', 'test_accuracy'}
             of n_repetition runs.
     '''
-    print(f"Collecting measures for {model_creating_func.__name__} model")
+    print(f"Collecting measures for {model_name} model")
 
     n_repetitions     = parameters.pop('n_repetitions')
     n_samples_dataset = parameters.pop('n_samples_dataset')
@@ -291,7 +302,16 @@ def train_multiple_times(model_creating_func, parameters):
         print(f"Performing measure {i+1} of {n_repetitions}", end = "\r")
         train_input, train_target, train_classes, test_input, test_target, test_classes = prologue.generate_pair_sets(n_samples_dataset)
 
-        model = model_creating_func(**params_model).cuda()
+        model = model_creating_func(**params_model)
+        
+        if torch.cuda.is_available():
+            train_input   = train_input.cuda()
+            train_target  = train_target.cuda()
+            train_classes = train_classes.cuda()
+            test_input    = test_input.cuda()
+            test_target   = test_target.cuda()
+            test_classes  = test_classes.cuda()
+            model         = model.cuda()
         
         results_repetition  = train_model(model = model, 
                                           train_input = train_input, 
@@ -303,5 +323,7 @@ def train_multiple_times(model_creating_func, parameters):
                                           **params_training)
         
         results.append( results_repetition )
+        
     print('\n')
+    
     return results

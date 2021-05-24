@@ -13,6 +13,7 @@ def count_nb_parameters(model):
 
     return nb_parameters    
 
+
 def results_summary(results, use_auxiliary_loss):
     '''
     Computes the mean, std, min and max accuracy of multiples run.
@@ -39,27 +40,22 @@ def results_summary(results, use_auxiliary_loss):
         max_digit::[torch.Tensor]
             Maximum accuracy of digit over all runs.       
     '''
-    metrics = results[0].keys()
-    grouped_metrics = {metric: [res[metric] for res in results] for metric in metrics}
-
-    comparison=[]
-    digit=[]
-
-    #Comparison accuracy
-    for i in range(len(grouped_metrics['test_accuracy'])):
-        comparison.append(grouped_metrics['test_accuracy'][i][-1,0])
-    mean_comparison=torch.tensor(comparison).mean()
-    std_comparison =torch.tensor(comparison).std()
-    min_comparison =torch.tensor(comparison).min()
-    max_comparison =torch.tensor(comparison).max()
-    #Digit accuracy
+    final_test_accuracies = [res['test_accuracy'][res['final_weights_epoch']] for res in results]
+    
+    # Comparison accuracy.
+    comparison_accuracy = [elem[0] for elem in final_test_accuracies]
+    mean_comparison = torch.tensor(comparison_accuracy).mean()
+    std_comparison  = torch.tensor(comparison_accuracy).std()
+    min_comparison  = torch.tensor(comparison_accuracy).min()
+    max_comparison  = torch.tensor(comparison_accuracy).max()
+        
+    # Digits accuracy
     if use_auxiliary_loss:
-        for i in range(len(grouped_metrics['test_accuracy'])): 
-            digit.append(grouped_metrics['test_accuracy'][i][-1,1])
-        mean_digit=torch.tensor(digit).mean()
-        std_digit =torch.tensor(digit).std()
-        min_digit =torch.tensor(digit).min()
-        max_digit =torch.tensor(digit).max() 
+        digits_accuracy = [[elem[-1] for elem in final_test_accuracies]]
+        mean_digit = torch.tensor(digits_accuracy).mean()
+        std_digit  = torch.tensor(digits_accuracy).std()
+        min_digit  = torch.tensor(digits_accuracy).min()
+        max_digit  = torch.tensor(digits_accuracy).max() 
 
         return mean_comparison, std_comparison, min_comparison, max_comparison, mean_digit, std_digit, min_digit, max_digit
 

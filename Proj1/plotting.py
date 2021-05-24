@@ -1,7 +1,7 @@
 import torch
 import matplotlib.pyplot as plt
 
-def plot_results(results, use_auxiliary_loss):
+def plot_results(results, use_auxiliary_loss, title):
     '''
     Plots the train/test loss and accuracy for comparison and digit targets of multiple runs
 
@@ -31,6 +31,7 @@ def plot_results(results, use_auxiliary_loss):
         for metric_training in grouped_metrics[metric]:
             ax.plot(metric_training[:,0])
 
+    fig_comparison.suptitle('Digits Comparison Accuracies and Losses for ' + title, fontsize=16)
     fig_comparison.tight_layout()
 
     #Draws metrics for digit for each run individually
@@ -44,7 +45,8 @@ def plot_results(results, use_auxiliary_loss):
             
             for metric_training in grouped_metrics[metric]:
                 ax.plot(metric_training[:,1])
-
+        
+        fig_digit.suptitle('Digits Predictio Accuracies and Losses for ' + title, fontsize=16)
         fig_digit.tight_layout()
 
         return fig_comparison, fig_digit
