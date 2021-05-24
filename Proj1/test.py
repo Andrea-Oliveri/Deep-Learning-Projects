@@ -9,7 +9,7 @@ n_samples_dataset = 1000
 models_to_run = {
     
         "Fully Connected Net (not siamese, no auxiliary loss)":
-                { 'model_creating_func': FullyConnecetedNet,
+                { 'model_creating_func': FullyConnectedNet,
                   'n_repetitions': n_repetitions,
                   'n_samples_dataset': n_samples_dataset,
                   'nb_epochs': 200, 
@@ -25,7 +25,7 @@ models_to_run = {
         # siamese + auxiliary loss, but beta is set to 1 so auxiliary loss
         # has no impact during back-propagation.
         "Fully Connected Net (siamese, no auxiliary loss)":
-                { 'model_creating_func': FullyConnecetedNetAux,
+                { 'model_creating_func': FullyConnectedNetAux,
                   'n_repetitions': n_repetitions,
                   'n_samples_dataset': n_samples_dataset,
                   'nb_epochs': 200, 
@@ -38,7 +38,7 @@ models_to_run = {
                   'nb_hidden': 100}, 
                 
         "Fully Connected Net (siamese, auxiliary loss)":
-                { 'model_creating_func': FullyConnecetedNetAux,
+                { 'model_creating_func': FullyConnectedNetAux,
                   'n_repetitions': n_repetitions,
                   'n_samples_dataset': n_samples_dataset,
                   'nb_epochs': 200, 

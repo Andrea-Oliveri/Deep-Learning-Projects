@@ -1,7 +1,7 @@
 from torch import nn
 from torch.nn import functional as F
 
-class FullyConnecetedNet(nn.Module):
+class FullyConnectedNet(nn.Module):
     """
     Fully Connected Network with two hidden layers.
         Predicts for each pair of digit if the first digit is lesser or equal to the second.
@@ -38,7 +38,7 @@ class FullyConnecetedNet(nn.Module):
         return x
 
 
-class FullyConnecetedNetAux(nn.Module):
+class FullyConnectedNetAux(nn.Module):
     """
     Fully Connected Network with two hidden layers.
         Predicts for each picture the corresponding digit.
