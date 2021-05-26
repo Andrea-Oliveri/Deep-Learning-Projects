@@ -19,7 +19,8 @@ models_to_run = {
                   'verbose': False,
                   'p': 0.5,
                   'nb_hidden1': 100,
-                  'nb_hidden2': 20}, 
+                  'nb_hidden2': 20,
+                  'nb_hidden3': 20}, 
                 
         # Siamese but no auxiliary loss implementes as exactly the same as
         # siamese + auxiliary loss, but beta is set to 1 so auxiliary loss
@@ -35,7 +36,8 @@ models_to_run = {
                   'beta': 1.0, 
                   'verbose': False,
                   'p': 0.5,
-                  'nb_hidden': 100}, 
+                  'nb_hidden1': 100,
+                  'nb_hidden2': 20}, 
                 
         "Fully Connected Net (siamese, auxiliary loss)":
                 { 'model_creating_func': FullyConnectedNetAux,
@@ -45,10 +47,11 @@ models_to_run = {
                   'mini_batch_size': 20,
                   'lr': 1e-3,
                   'use_auxiliary_loss': True,
-                  'beta': 0.7, 
+                  'beta': 0.5, 
                   'verbose': False,
                   'p': 0.5,
-                  'nb_hidden': 100}, 
+                  'nb_hidden1': 100,
+                  'nb_hidden2': 20},
                 
         "Convolutional Net (not siamese, no auxiliary loss)":
                 { 'model_creating_func': ConvolutionalNet,
@@ -62,7 +65,8 @@ models_to_run = {
                   'p': 0.6,
                   'nb_channel1': 32,
                   'nb_channel2': 64,
-                  'nb_hidden': 20,
+                  'nb_hidden1': 20,
+                  'nb_hidden2': 20,
                   'padding': 0,
                   'k_size': 4},
                 
@@ -80,6 +84,7 @@ models_to_run = {
                   'p': 0.6,
                   'nb_channel1': 32,
                   'nb_channel2': 64,
+                  'nb_hidden': 20,
                   'padding': 2,
                   'k_size': 5},
                 
@@ -97,6 +102,7 @@ models_to_run = {
                   'p': 0.6,
                   'nb_channel1': 32,
                   'nb_channel2': 64,
+                  'nb_hidden': 20,
                   'padding': 2,
                   'k_size': 5}
         }
@@ -121,8 +127,8 @@ for model_name, model_params in models_to_run.items():
 
     if model_params['use_auxiliary_loss']:
             fig_comparison, fig_digit=plot_results(results=results, use_auxiliary_loss = model_params['use_auxiliary_loss'], title = model_name)
-            fig_comparison.savefig("./results/" +model_name+'_comparison.pdf')
-            fig_digit.savefig("./results/" +model_name+'_digit.pdf')
+            fig_comparison.savefig("./results/" +model_name+'_comparison.pdf', bbox_inches='tight')
+            fig_digit.savefig("./results/" +model_name+'_digit.pdf', bbox_inches='tight')
     else:
             fig_comparison=plot_results(results=results, use_auxiliary_loss = model_params['use_auxiliary_loss'], title = model_name)
-            fig_comparison.savefig("./results/" +model_name+'_comparison.pdf')
+            fig_comparison.savefig("./results/" +model_name+'_comparison.pdf', bbox_inches='tight')
