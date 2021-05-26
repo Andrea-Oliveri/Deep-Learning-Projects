@@ -77,7 +77,7 @@ class FullyConnectedNetAux(nn.Module):
         x = self.dropout1(self.fc1(x))
         
         digits_pred = self.fc2(x)
-        x = F.softmax(digits_pred, dim = 1)
+        x = digits_pred
 
         # Each predicted digit is concatenated with the digit to which it must be compared.
         x = x.view(batch_size, -1)
@@ -205,7 +205,7 @@ class ConvolutionalNetAux(nn.Module):
 
         digits_pred = self.fc1(x)
 
-        x = F.softmax(digits_pred, dim = 1)
+        x = digits_pred
         # Each predicted digit is concatenated with the digit to which it must be compared
         x = x.view(batch_size, -1)
         x = self.fc2(x)
