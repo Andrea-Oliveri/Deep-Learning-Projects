@@ -15,11 +15,11 @@ done without using autograd or the neural-network modules of pytorch.
        is an abstract Initializer class with several subclasses implementing different kinds
        of initializer such as Xavier or He normal or uniform.
       
-    - `layers` contains layer classes inheriting from Module abstract class. The Linear 
+    - `layers.py` contains layer classes inheriting from Module abstract class. The Linear 
        layer which is simply a fully connected linear layer as well as the ReLU and the Tanh 
        activation layers are for example implemented.
     
-    - `learning_rate_schedulers` defines a hierarchy of class for learning rate schedulers. 
+    - `learning_rate_schedulers.py` defines a hierarchy of class for learning rate schedulers. 
        In particular, there is an abstract LearningRateScheduler class with several subclasses 
        implementing different kinds of learning rate schedulers such as constant or time 
        decaying learning rate.
