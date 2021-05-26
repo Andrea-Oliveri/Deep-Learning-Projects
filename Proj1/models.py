@@ -72,12 +72,13 @@ class FullyConnectedNetAux(nn.Module):
     def forward(self, x):
         batch_size, nb_channels, image_rows, image_cols = x.size()
 
-        # Vectorize pictures and concatenates the pairs of pictures.
-        x = x.view(nb_channels * batch_size, image_rows * image_cols)
-        x = F.relu(self.dropout1(self.fc1(x)))
         # Each digit is predicted separately
-        digits_pred = F.relu(self.fc2(x.view(2 * batch_size, -1)))
+        x = x.view(nb_channels * batch_size, image_rows * image_cols)
+        x = self.dropout1(self.fc1(x))
+        
+        digits_pred = self.fc2(x)
         x = F.softmax(digits_pred, dim = 1)
+
         # Each predicted digit is concatenated with the digit to which it must be compared.
         x = x.view(batch_size, -1)
         x = self.fc3(x)
@@ -198,12 +199,11 @@ class ConvolutionalNetAux(nn.Module):
         # Concatenate the channels along the batch dimension. Order is : [P1 C1, P1 C2, P2 C1, P2 C2, ...]
         x = x.view(nb_channels * batch_size, 1, image_rows, image_cols)
 
-        # Images of both channels are trained indifferently
+        # Each digit is predicted separately
         x = F.relu(self.maxpool1(self.dropout1(self.conv1(x))))
         x = F.relu(self.maxpool2(self.dropout2(self.conv2(x))))
 
-        # Each digit is predicted separately
-        digits_pred = self.fc1(x.view(2 * batch_size, -1))
+        digits_pred = self.fc1(x)
 
         x = F.softmax(digits_pred, dim = 1)
         # Each predicted digit is concatenated with the digit to which it must be compared
