@@ -16,11 +16,10 @@ models_to_run = {
                   'mini_batch_size': 20,
                   'lr': 1e-3,
                   'use_auxiliary_loss': False,
-                  'verbose': False,
                   'p': 0.5,
                   'nb_hidden1': 100,
-                  'nb_hidden2': 20,
-                  'nb_hidden3': 20}, 
+                  'nb_hidden2': 50,
+                  'nb_hidden3': 10}, 
                 
         # Siamese but no auxiliary loss implementes as exactly the same as
         # siamese + auxiliary loss, but beta is set to 1 so auxiliary loss
@@ -37,7 +36,7 @@ models_to_run = {
                   'verbose': False,
                   'p': 0.5,
                   'nb_hidden1': 100,
-                  'nb_hidden2': 20}, 
+                  'nb_hidden2': 10}, 
                 
         "Fully Connected Net (siamese, auxiliary loss)":
                 { 'model_creating_func': FullyConnectedNetAux,
@@ -51,7 +50,7 @@ models_to_run = {
                   'verbose': False,
                   'p': 0.5,
                   'nb_hidden1': 100,
-                  'nb_hidden2': 20},
+                  'nb_hidden2': 40},
                 
         "Convolutional Net (not siamese, no auxiliary loss)":
                 { 'model_creating_func': ConvolutionalNet,
@@ -66,7 +65,7 @@ models_to_run = {
                   'nb_channel1': 32,
                   'nb_channel2': 64,
                   'nb_hidden1': 20,
-                  'nb_hidden2': 20,
+                  'nb_hidden2': 10,
                   'padding': 0,
                   'k_size': 4},
                 
@@ -84,7 +83,7 @@ models_to_run = {
                   'p': 0.6,
                   'nb_channel1': 32,
                   'nb_channel2': 64,
-                  'nb_hidden': 20,
+                  'nb_hidden': 40,
                   'padding': 2,
                   'k_size': 5},
                 
@@ -102,7 +101,7 @@ models_to_run = {
                   'p': 0.6,
                   'nb_channel1': 32,
                   'nb_channel2': 64,
-                  'nb_hidden': 20,
+                  'nb_hidden': 40,
                   'padding': 2,
                   'k_size': 5}
         }

@@ -6,11 +6,12 @@ import os
 
 from models import *
 from utils import *
+from training import *
 
 
 
 
-def train_all_params(model_creating_func, params_dict):
+def train_all_params(model_creating_func, params_dict, pickle_path):
     all_params_combinations = []
     
     warnings.filterwarnings("ignore")
@@ -25,13 +26,15 @@ def train_all_params(model_creating_func, params_dict):
     print("Testing {} Combinations".format(len(params_mesh[0])))
     
     
+    if os.path.isfile(pickle_path):
+        with open(pickle_path, "rb") as file:
+            already_done = pickle.load(file)
+        measures = already_done
+    else:
+        measures=[]
     
-    with open("ConvNetAux_measures_updated.pkl", "rb") as file:
-        already_done = pickle.load(file)
-    
-    
-    measures = already_done
-    count = len(measures)
+    count=0
+
     for params in zip(*params_mesh):
         count += 1
         print("\n\nStarting Training {} of {}".format(count, len(params_mesh[0])))
@@ -59,11 +62,10 @@ def train_all_params(model_creating_func, params_dict):
                                    test_target = test_target,
                                    test_classes = test_classes,
                                    **params_training)
-            
             measures.append( (dict(p_dict), results) )
             
-            with open("ConvNetAux_measures_updated.pkl", "wb") as file:
-                pickle.dump(measures, file)
+            # with open("ConvNetAux_measures_updated.pkl", "wb") as file:
+            #     pickle.dump(measures, file)
         except Exception as e:
             if 'Output size is too small' in str(e):
                 print(e)
@@ -73,77 +75,101 @@ def train_all_params(model_creating_func, params_dict):
     return measures
 
 
-        
-        
-        
-redo_cached = False
-
-
-
-
-# Fully connected net with 2 hidden layers. Channels are concatenated into the
-# same vector at input.
-# pickle_path = "MLP_measures.pkl"
-# if True or redo_cached or not os.path.exists(pickle_path):
-
-#    measures = train_all_params(MLP, {'p': [0.4,0.5],
-#                                      'nb_hidden1': [100],
-#                                      'nb_hidden2': [20, 30],
-#                                      'nb_epochs': [200],
-#                                      'mini_batch_size': [10,20,50],
-#                                      'lr': [0.001,0.0001]}) # Adam's default. Should adapt it anyway.
+pickle_path = "FullyConnectedNet.pkl"
+measures = train_all_params(FullyConnectedNet, {
+                  'nb_epochs': 200, 
+                  'mini_batch_size': 20,
+                  'lr': 1e-3,
+                  'use_auxiliary_loss': False,
+                  'p': 0.5,
+                  'nb_hidden1': 100,
+                  'nb_hidden2': [20, 50, 100],
+                  'nb_hidden3': [10, 20, 40]}
+                  ,pickle_path) # Adam's default. Should adapt it anyway.
                            
-#    with open(pickle_path, "wb") as file:
-#        pickle.dump(measures, file)
-        
-        
-        
-# Fully connected net with 2 hidden layers. Channels undergo the same treatement
-# (they are concatenated along batch dimention). Second-last Linear layer predicts digits.
-# When beta = 1, the auxiliary loss is ignored -> Only final loss counts. May want to perform 
-# comparison to see how useful auxiliary loss is over just treating channels separately.
-# pickle_path = "MLPAux_measures.pkl"
-# if True or redo_cached or not os.path.exists(pickle_path):
+with open(pickle_path, "wb") as file:
+       pickle.dump(measures, file)
 
-#     measures = train_all_params(MLPAux, {'p': [0.2],
-#                                          'nb_hidden': [100],
-#                                          'nb_epochs': [400],
-#                                          'mini_batch_size': [10,100],
-#                                          'lr': [0.001,0.0001], # Adam's default. Should adapt it anyway.
-#                                          'beta': [0.7,0.8,0.9]})
-                           
-#     with open(pickle_path, "wb") as file:
-#         pickle.dump(measures, file)
-        
-        
-# pickle_path = "ConvNet_measures_updated.pkl"
-# if True or redo_cached or not os.path.exists(pickle_path):
-    # measures = train_all_params(ConvNet, {'p': [0.6],
-    #                                 'nb_hidden': [20, 40],
-    #                                 'k_size': [4],
-    #                                 'padding': [1], # 0 or 1
-    #                                 'nb_channel_1': [32, 64],
-    #                                 'nb_channel_2': [64],
-    #                                 'nb_epochs': [500],
-    #                                 'mini_batch_size': [10],
-    #                                 'lr': [0.001]}) # Adam's default. Should adapt it anyway.
-                        
+pickle_path = "FullyConnectedNetAux_noAux.pkl"
+measures = train_all_params(FullyConnectedNetAux, {
+                  'nb_epochs': 200, 
+                  'mini_batch_size': 20,
+                  'lr': 1e-3,
+                  'use_auxiliary_loss': True,
+                  'beta': 1.0, 
+                  'p': 0.5,
+                  'nb_hidden1': [100],
+                  'nb_hidden2': [10, 20, 40]},
+                  pickle_path)
+
+with open(pickle_path, "wb") as file:
+    pickle.dump(measures, file)
+
+pickle_path = "FullyConnectedNetAux_Aux.pkl"
+measures = train_all_params(FullyConnectedNetAux, {
+                  'nb_epochs': 200, 
+                  'mini_batch_size': 20,
+                  'lr': 1e-3,
+                  'use_auxiliary_loss': True,
+                  'beta': [0.5, 0.7], 
+                  'p': 0.5,
+                  'nb_hidden1': [20, 40, 100],
+                  'nb_hidden2': [10, 20, 40]},
+                  pickle_path)
+
 with open(pickle_path, "wb") as file:
     pickle.dump(measures, file)
         
-pickle_path = "ConvNetAux_measures_updated.pkl"
-if True or redo_cached or not os.path.exists(pickle_path):
+pickle_path = "ConvolutionalNet.pkl"
+measures = train_all_params(ConvolutionalNet, {
+                  'nb_epochs': 500, 
+                  'mini_batch_size': 20,
+                  'lr': 1e-3,
+                  'use_auxiliary_loss': False,
+                  'p': 0.6,
+                  'nb_channel1': 32,
+                  'nb_channel2': 64,
+                  'nb_hidden1': [10, 20, 40],
+                  'nb_hidden2': [10, 20, 40],
+                  'padding': 0,
+                  'k_size': 4},
+                  pickle_path)
 
-    measures = train_all_params(ConvNetAux, {'p': [0.6],
-                                      'k_size': [5],
-                                      'padding': [1], # 0 or 1
-                                      'nb_channel1': [32],
-                                      'nb_channel2': [64],
-                                      'nb_epochs': [501],
-                                      'mini_batch_size': [200],
-                                      'lr': [0.001],# Adam's default. Should adapt it anyway.
-                                      'beta': [0.7]}) 
-                           
-    with open(pickle_path, "wb") as file:
-        pickle.dump(measures, file)
-        
+with open(pickle_path, "wb") as file:
+    pickle.dump(measures, file)
+
+pickle_path = "ConvolutionalNetAux_noAux.pkl"
+measures = train_all_params(ConvolutionalNetAux, {
+                  'nb_epochs': 500, 
+                  'mini_batch_size': 20,
+                  'lr': 1e-3,
+                  'use_auxiliary_loss': True,
+                  'beta': 1.0,
+                  'p': 0.6,
+                  'nb_channel1': 32,
+                  'nb_channel2': 64,
+                  'nb_hidden': [10, 20, 40],
+                  'padding': 2,
+                  'k_size': 5},
+                  pickle_path)
+
+with open(pickle_path, "wb") as file:
+    pickle.dump(measures, file)
+
+pickle_path = "ConvolutionalNetAux_Aux.pkl"
+measures = train_all_params(ConvolutionalNetAux, {
+                  'nb_epochs': 500, 
+                  'mini_batch_size': 20,
+                  'lr': 1e-3,
+                  'use_auxiliary_loss': True,
+                  'beta': [0.1, 0.2, 0.5, 0.7, 0.9],
+                  'p': 0.6,
+                  'nb_channel1': 32,
+                  'nb_channel2': 64,
+                  'nb_hidden': [10, 20, 40],
+                  'padding': 2,
+                  'k_size': 5},
+                  pickle_path)
+
+with open(pickle_path, "wb") as file:
+    pickle.dump(measures, file)
