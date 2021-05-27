@@ -28,9 +28,7 @@ def print_results_summary(results, model_name):
     # Extract the test_accuracy corresponding to the model which EarlyStopping
     # restored the weights of for each run.
     final_test_accuracies = [res['test_accuracy'][res['final_weights_epoch']] for res in results]
-    
-    mean_final_weights_epoch = sum([res['final_weights_epoch'] for res in results]) / len(results)
-    
+        
     # Comparison accuracy.
     comparison_accuracy = [elem[0] for elem in final_test_accuracies]
     mean_comparison = torch.tensor(comparison_accuracy).mean()
@@ -39,7 +37,6 @@ def print_results_summary(results, model_name):
     max_comparison  = torch.tensor(comparison_accuracy).max()
     
     print(f"Results for {model_name}:")
-    print(f"    Training stopped improving after {mean_final_weights_epoch} epochs on average")
     print(f"    Mean comparison accuracy: {mean_comparison}")
     print(f"    Std  comparison accuracy: {std_comparison}")
     print(f"    Min  comparison accuracy: {min_comparison}")
