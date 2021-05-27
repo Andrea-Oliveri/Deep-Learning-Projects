@@ -14,33 +14,22 @@ def count_nb_parameters(model):
     return nb_parameters    
 
 
-def results_summary(results, use_auxiliary_loss):
+def print_results_summary(results, model_name):
     '''
     Computes the mean, std, min and max accuracy of multiples run.
     Args:
         results::[list]
-            List containing the dictionaries {'train_loss':,'test_loss':,'train_accuracy':,'test_accuracy':} for each run.
-        use_auxiliary_loss::[bool]
-            Boolean flag determining if the model uses auxiliary loss.
-    Returns:
-        mean_comparison::[torch.Tensor]
-            Mean accuracy of comparison over all runs.
-        std_comparison::[torch.Tensor]
-            Standard deviation accuracy of comparison over all runs.
-        min_comparison::[torch.Tensor]
-            Minimum accuracy of comparison over all runs.
-        max_comparison::[torch.Tensor]
-            Maximum accuracy of comparison over all runs.
-        mean_digit::[torch.Tensor]
-            Mean accuracy of digit over all runs.
-        std_digit::[torch.Tensor]
-            Standard deviation accuracy of digit over all runs.
-        min_digit::[torch.Tensor]
-            Minimum accuracy of digit over all runs.
-        max_digit::[torch.Tensor]
-            Maximum accuracy of digit over all runs.       
+            List containing dictionaries with keys 'train_loss', 'test_loss',
+            'train_accuracy', 'test_accuracy' and 'final_weights_epoch' for 
+            each run.
+        model_name::[str]
+            The name of the model which has been trained.
     '''
+    # Extract the test_accuracy corresponding to the model which EarlyStopping
+    # restored the weights of for each run.
     final_test_accuracies = [res['test_accuracy'][res['final_weights_epoch']] for res in results]
+    
+    mean_final_weights_epoch = sum([res['final_weights_epoch'] for res in results]) / len(results)
     
     # Comparison accuracy.
     comparison_accuracy = [elem[0] for elem in final_test_accuracies]
@@ -48,17 +37,25 @@ def results_summary(results, use_auxiliary_loss):
     std_comparison  = torch.tensor(comparison_accuracy).std()
     min_comparison  = torch.tensor(comparison_accuracy).min()
     max_comparison  = torch.tensor(comparison_accuracy).max()
-        
-    # Digits accuracy
-    if use_auxiliary_loss:
+    
+    print(f"Results for {model_name}:")
+    print(f"    Training stopped improving after {mean_final_weights_epoch} epochs on average")
+    print(f"    Mean comparison accuracy: {mean_comparison}")
+    print(f"    Std  comparison accuracy: {std_comparison}")
+    print(f"    Min  comparison accuracy: {min_comparison}")
+    print(f"    Max  comparison accuracy: {max_comparison}")
+           
+    # Digits accuracy for models which do train with auxiliary loss.
+    if "no auxiliary loss" not in model_name:
         digits_accuracy = [[elem[-1] for elem in final_test_accuracies]]
         mean_digit = torch.tensor(digits_accuracy).mean()
         std_digit  = torch.tensor(digits_accuracy).std()
         min_digit  = torch.tensor(digits_accuracy).min()
-        max_digit  = torch.tensor(digits_accuracy).max() 
-
-        return mean_comparison, std_comparison, min_comparison, max_comparison, mean_digit, std_digit, min_digit, max_digit
-
-    return mean_comparison, std_comparison, min_comparison, max_comparison
-
+        max_digit  = torch.tensor(digits_accuracy).max()
+        
+        print(f"    Mean digits accuracy: {mean_digit}")
+        print(f"    Std  digits accuracy: {std_digit}")
+        print(f"    Min  digits accuracy: {min_digit}")
+        print(f"    Max  digits accuracy: {max_digit}")
     
+    print('\n')

@@ -26,14 +26,14 @@ def generate_data(n_training_samples = 1000, n_test_samples = 1000):
             Tensor of shape (n_training_samples, 2) containing generated points
             for training set input.
         train_target::[torch.Tensor]
-            Tensor of shape (n_training_samples, 2) containing labels in one-hot
-            format corresponding to train_input.
+            Tensor of shape (n_training_samples, ) containing labels
+            corresponding to train_input.
         test_input::[torch.Tensor]
             Tensor of shape (n_training_samples, 2) containing generated points
             for test set input.
         test_target::[torch.Tensor]
-            Tensor of shape (n_training_samples, 2) containing labels in one-hot
-            format corresponding to test_input.
+            Tensor of shape (n_training_samples, ) containing labels 
+            corresponding to test_input.
     """
     all_inputs = empty(n_training_samples + n_test_samples, 2).uniform_()
 
@@ -83,8 +83,7 @@ def train_or_predict_epoch(model, inputs, targets, criterion, training, lr = Non
             Tensor of shape (n_samples, 2) containing points to be used during 
             training or prediction with the model.
         targets::[torch.Tensor]
-            Tensor of shape (n_samples, 2) containing labels in one-hot
-            format corresponding to inputs.
+            Tensor of shape (n_samples, ) containing labels corresponding to inputs.
         criterion::[Loss]
             Instance of Loss used to calcolate loss of each sample from target
             and model predictions.
