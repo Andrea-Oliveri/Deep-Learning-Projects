@@ -52,7 +52,7 @@ models_to_run = {
                   'beta': 0.5, 
                   'p': 0.5,
                   'nb_hidden1': 100,
-                  'nb_hidden2': 40},
+                  'nb_hidden2': 10},
                 
                 
         "Convolutional Net (not siamese, no auxiliary loss)":

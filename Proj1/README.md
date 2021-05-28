@@ -5,7 +5,8 @@ Authors: Andrea Oliveri, Célina Chkroun, Stéphane Nilsson
 The aim of this project is to assess the performance in terms of accuracy of different
 model architectures implemented using the Pytorch framework. The impact of weight sharing
 and the use of auxiliarly losses are assessed on a simple digits comparison problem,
-in which we want to predict if one digit is larger than the other using images from mnist.
+in which we want to predict if one digit is smaller or equal to the other using images 
+from mnist.
 
 ## Folder Structure
 - `callbacks.py` contains implementations of useful callbacks used during training. In

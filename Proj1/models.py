@@ -5,8 +5,8 @@ from torch.nn import functional as F
 class FullyConnectedNet(nn.Module):
     """Fully Connected Network which takes inputs containing an image per
     channel and just flattenes all channels into one single long vector
-    and processes it to predict if the first channel digit is larger than 
-    the second channel one."""
+    and processes it to predict if the first channel digit is smaller or 
+    equal to that in the second channel."""
     
     def __init__(self, p, nb_hidden1, nb_hidden2, nb_hidden3):
         """Constructor of FullyConnectedNet class, which instanciates the
@@ -47,8 +47,8 @@ class FullyConnectedNet(nn.Module):
             out::[torch.tensor]
                 The output tensor obtained by performing the forward pass on x,
                 of shape (batch_size, 2). Predicts whether the digit in the 
-                first channel of the input is larger than that in the second 
-                channel.    
+                first channel of the input is smaller or equal to that in the 
+                second channel.    
         """
         x = inputs.view(-1, self.flattened_size)
         x = F.relu(self.dropout1(self.fc1(x)))
@@ -63,8 +63,8 @@ class FullyConnectedNetAux(nn.Module):
     """Fully Connected Network which takes inputs containing an image per
     channel and reuses the same weights to first make a prediction of the 
     digit contained by each channel, and finally uses these predictions to
-    determine if the first channel digit is larger than the second channel
-    one."""
+    determine if the first channel digit is smaller or equal to that in the 
+    second channel.""" 
 
     def __init__(self, p, nb_hidden1, nb_hidden2):
         """Constructor of FullyConnectedNetAux class, which instanciates the
@@ -102,8 +102,8 @@ class FullyConnectedNetAux(nn.Module):
             out::[torch.tensor]
                 The output tensor obtained by performing the forward pass on x,
                 of shape (batch_size, 2). Predicts whether the digit in the 
-                first channel of the input is larger than that in the second 
-                channel.
+                first channel of the input is smaller or equal to that in the 
+                second channel.    
             digits_pred::[torch.tensor]
                 Tensor of shape (2 * batch_size, 10) containing the digits
                 predicted for each channel of each image in the input tensor.
@@ -131,7 +131,7 @@ class ConvolutionalNet(nn.Module):
     """Convolutional Network which takes inputs containing an image per
     channel and merges the channels with its first convolutional filter, 
     then keeps on processing the result to predict if the first channel digit
-    is larger than the second channel one."""
+    is smaller or equal to that in the second channel."""
 
     def __init__(self, p, k_size, padding, nb_channel1, nb_channel2, 
                  nb_hidden1, nb_hidden2):
@@ -190,8 +190,8 @@ class ConvolutionalNet(nn.Module):
             out::[torch.tensor]
                 The output tensor obtained by performing the forward pass on x,
                 of shape (batch_size, 2). Predicts whether the digit in the 
-                first channel of the input is larger than that in the second 
-                channel.    
+                first channel of the input is smaller or equal to that in the 
+                second channel.
         """
         x = F.relu(self.maxpool1(self.dropout1(self.conv1(inputs))))
         x = F.relu(self.maxpool2(self.dropout2(self.conv2(x))))
@@ -207,8 +207,8 @@ class ConvolutionalNetAux(nn.Module):
     """Convolutional Network which takes inputs containing an image per
     channel and reuses the same weights to first make a prediction of the 
     digit contained by each channel, and finally uses these predictions to
-    determine if the first channel digit is larger than the second channel
-    one."""
+    determine if the first channel digit is smaller or equal to that in
+    the second channel."""
     
     def __init__(self, p, k_size, padding, nb_channel1, nb_channel2, nb_hidden):
         """Constructor of ConvolutionalNet class, which instanciates the
@@ -264,8 +264,8 @@ class ConvolutionalNetAux(nn.Module):
             out::[torch.tensor]
                 The output tensor obtained by performing the forward pass on x,
                 of shape (batch_size, 2). Predicts whether the digit in the 
-                first channel of the input is larger than that in the second 
-                channel.
+                first channel of the input is smaller or equal to that in the 
+                second channel.
             digits_pred::[torch.tensor]
                 Tensor of shape (2 * batch_size, 10) containing the digits
                 predicted for each channel of each image in the input tensor.
